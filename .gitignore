@@ -42,6 +42,3 @@ lerna-debug.log*
 
 # Build artifacts
 *.tsbuildinfo
-
-# Uploaded files (local file storage)
-/uploads
