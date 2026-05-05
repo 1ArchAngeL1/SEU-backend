@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
+import {
+  PolygonPoint,
+  PolygonPointSchema,
+} from '@/common/schemas/polygon-point.schema';
 import { LocalizedString } from '@/common/types/localized-string';
 import { Room, RoomSchema } from '@/room/schemas/room.schema';
 import { FurnishingStatus, UnitStatus, UnitType } from '../enums/unit.enums';
@@ -47,6 +51,9 @@ export class Unit {
     index: true,
   })
   floor: Types.ObjectId;
+
+  @Prop({ required: true, trim: true, uppercase: true, index: true })
+  block: string;
 
   @Prop({ required: true, min: -10, index: true })
   floorNumber: number;
@@ -119,6 +126,12 @@ export class Unit {
 
   @Prop({ type: SaleRecord })
   saleRecord?: SaleRecord;
+
+  @Prop()
+  renderImage?: string;
+
+  @Prop({ type: [PolygonPointSchema], default: [] })
+  polygon: PolygonPoint[];
 
   @Prop({ default: true, index: true })
   isActive: boolean;

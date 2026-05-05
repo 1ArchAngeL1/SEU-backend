@@ -133,6 +133,11 @@ export class CreateProjectDto {
   @Type(() => PriceRangeDto)
   priceRange?: PriceRangeDto;
 
+  @ApiPropertyOptional({ description: 'Project render image for interactive building polygon mapping' })
+  @IsOptional()
+  @IsString()
+  renderImage?: string;
+
   @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()

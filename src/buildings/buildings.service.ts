@@ -13,6 +13,7 @@ import { FloorsService } from '@/floors/floors.service';
 import { Project, ProjectDocument } from '@/projects/schemas/project.schema';
 import { Unit, UnitDocument } from '@/units/schemas/unit.schema';
 import { UnitStatus } from '@/units/enums/unit.enums';
+import { parseRawPolygon } from '@/common/utils/polygon.util';
 import { CreateBuildingDto } from './dto/create-building.dto';
 import { QueryBuildingDto } from './dto/query-building.dto';
 import { UpdateBuildingDto } from './dto/update-building.dto';
@@ -43,7 +44,8 @@ export class BuildingsService {
       );
     }
 
-    const created = await this.buildingModel.create(dto);
+    const payload = this.resolvePolygon(dto);
+    const created = await this.buildingModel.create(payload);
     await this.recountProjectBuildings(dto.project);
     return created;
   }
@@ -111,8 +113,9 @@ export class BuildingsService {
       }
     }
 
+    const payload = this.resolvePolygon(dto);
     const updated = await this.buildingModel
-      .findByIdAndUpdate(id, dto, { new: true, runValidators: true })
+      .findByIdAndUpdate(id, payload, { new: true, runValidators: true })
       .populate('project', 'name')
       .exec();
 
@@ -133,6 +136,17 @@ export class BuildingsService {
       project: new Types.ObjectId(projectId),
     });
     await this.projectModel.findByIdAndUpdate(projectId, { $set: { totalBuildings: total } });
+  }
+
+  private resolvePolygon(dto: CreateBuildingDto | UpdateBuildingDto): Record<string, unknown> {
+    const { rawPolygon, imageWidth, imageHeight, ...rest } = dto as any;
+    if (rawPolygon) {
+      if (!imageWidth || !imageHeight) {
+        throw new BadRequestException('imageWidth and imageHeight are required when using rawPolygon');
+      }
+      return { ...rest, polygon: parseRawPolygon(rawPolygon, imageWidth, imageHeight) };
+    }
+    return rest;
   }
 
   private async recountProjectUnits(projectId: Types.ObjectId): Promise<void> {

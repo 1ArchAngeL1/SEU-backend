@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
+import {
+  PolygonPoint,
+  PolygonPointSchema,
+} from '@/common/schemas/polygon-point.schema';
 import { LocalizedString } from '@/common/types/localized-string';
 import { BuildingStatus } from '../enums/building-status.enum';
 
@@ -72,6 +76,12 @@ export class Building {
 
   @Prop({ type: LocalizedString })
   description?: LocalizedString;
+
+  @Prop()
+  renderImage?: string;
+
+  @Prop({ type: [PolygonPointSchema], default: [] })
+  polygon: PolygonPoint[];
 
   @Prop({ default: true, index: true })
   isActive: boolean;

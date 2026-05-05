@@ -11,6 +11,7 @@ import { Building, BuildingDocument } from '@/buildings/schemas/building.schema'
 import { Project, ProjectDocument } from '@/projects/schemas/project.schema';
 import { Unit, UnitDocument } from '@/units/schemas/unit.schema';
 import { UnitStatus } from '@/units/enums/unit.enums';
+import { parseRawPolygon } from '@/common/utils/polygon.util';
 import { Floor, FloorDocument } from './schemas/floor.schema';
 import { CreateFloorDto } from './dto/create-floor.dto';
 import { QueryFloorDto } from './dto/query-floor.dto';
@@ -39,11 +40,15 @@ export class FloorsService {
       throw new ConflictException(`Floor ${dto.floorNumber} already exists in this building`);
     }
 
+    const polygon = this.resolvePolygon(dto);
+
     return this.floorModel.create({
       building: building._id,
       project: building.project,
       floorNumber: dto.floorNumber,
       floorImageId: dto.floorImageId,
+      renderImage: dto.renderImage,
+      polygon,
     });
   }
 
@@ -86,8 +91,16 @@ export class FloorsService {
   }
 
   async update(id: string, dto: UpdateFloorDto): Promise<FloorDocument> {
+    const { rawPolygon, imageWidth, imageHeight, ...rest } = dto as any;
+    const payload: Record<string, unknown> = { ...rest };
+    if (rawPolygon) {
+      if (!imageWidth || !imageHeight) {
+        throw new BadRequestException('imageWidth and imageHeight are required when using rawPolygon');
+      }
+      payload.polygon = parseRawPolygon(rawPolygon, imageWidth, imageHeight);
+    }
     const updated = await this.floorModel
-      .findByIdAndUpdate(id, dto, { new: true, runValidators: true })
+      .findByIdAndUpdate(id, payload, { new: true, runValidators: true })
       .exec();
     if (!updated) throw new NotFoundException(`Floor '${id}' not found`);
     return updated;
@@ -102,6 +115,17 @@ export class FloorsService {
     await this.recountProjectUnits(deleted.project);
 
     return { deleted: true, id };
+  }
+
+  private resolvePolygon(dto: CreateFloorDto | UpdateFloorDto): any[] {
+    const { rawPolygon, imageWidth, imageHeight } = dto as any;
+    if (rawPolygon) {
+      if (!imageWidth || !imageHeight) {
+        throw new BadRequestException('imageWidth and imageHeight are required when using rawPolygon');
+      }
+      return parseRawPolygon(rawPolygon, imageWidth, imageHeight);
+    }
+    return (dto as any).polygon ?? [];
   }
 
   private async recountBuildingUnits(buildingId: Types.ObjectId): Promise<void> {

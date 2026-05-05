@@ -93,6 +93,9 @@ export class Project {
   @Prop({ type: PriceRange })
   priceRange?: PriceRange;
 
+  @Prop()
+  renderImage?: string;
+
   @Prop({ default: true, index: true })
   isActive: boolean;
 

@@ -9,6 +9,7 @@ import { FilterQuery, Model, Types } from 'mongoose';
 
 import { Building, BuildingDocument } from '../buildings/schemas/building.schema';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
+import { parseRawPolygon } from '../common/utils/polygon.util';
 import { parseSort } from '../common/utils/sort.util';
 import { FloorsService } from '../floors/floors.service';
 import { Project, ProjectDocument } from '../projects/schemas/project.schema';
@@ -53,12 +54,21 @@ export class UnitsService {
       throw new ConflictException(`Unit '${dto.unitNumber}' already exists in this building`);
     }
 
-    const created = await this.unitModel.create({
-      ...dto,
+    const { rawPolygon, imageWidth, imageHeight, ...restDto } = dto as any;
+    const payload: Record<string, unknown> = {
+      ...restDto,
       block: dto.block.toUpperCase(),
       floor: floor._id,
       floorNumber: dto.floorNumber,
-    });
+    };
+    if (rawPolygon) {
+      if (!imageWidth || !imageHeight) {
+        throw new BadRequestException('imageWidth and imageHeight are required when using rawPolygon');
+      }
+      payload.polygon = parseRawPolygon(rawPolygon, imageWidth, imageHeight);
+    }
+
+    const created = await this.unitModel.create(payload);
 
     await this.recountForBuilding(dto.building);
     await this.recountForProject(dto.project);
@@ -121,8 +131,15 @@ export class UnitsService {
       }
     }
 
-    const payload: Record<string, unknown> = { ...dto };
-    if (dto.block) payload.block = dto.block.toUpperCase();
+    const { rawPolygon, imageWidth, imageHeight, ...restUpdate } = dto as any;
+    const payload: Record<string, unknown> = { ...restUpdate };
+    if (dto.block != null) payload.block = dto.block.toUpperCase();
+    if (rawPolygon) {
+      if (!imageWidth || !imageHeight) {
+        throw new BadRequestException('imageWidth and imageHeight are required when using rawPolygon');
+      }
+      payload.polygon = parseRawPolygon(rawPolygon, imageWidth, imageHeight);
+    }
 
     const updated = await this.unitModel
       .findByIdAndUpdate(id, payload, { new: true, runValidators: true })

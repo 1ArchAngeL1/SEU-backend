@@ -1,6 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
+import {
+  PolygonPoint,
+  PolygonPointSchema,
+} from '@/common/schemas/polygon-point.schema';
+
 export type FloorDocument = HydratedDocument<Floor>;
 
 @Schema({
@@ -43,6 +48,12 @@ export class Floor {
 
   @Prop({ default: 0, min: 0 })
   availableUnits: number;
+
+  @Prop()
+  renderImage?: string;
+
+  @Prop({ type: [PolygonPointSchema], default: [] })
+  polygon: PolygonPoint[];
 }
 
 export const FloorSchema = SchemaFactory.createForClass(Floor);
