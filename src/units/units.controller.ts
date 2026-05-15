@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { Public } from '@/auth/decorators/public.decorator';
 import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 import { SyncRoomsDto } from '@/room/dto/room.dto';
 import { CreateUnitDto } from './dto/create-unit.dto';
@@ -32,24 +33,28 @@ export class UnitsController {
     return this.unitsService.create(dto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'List units with rich filtering and pagination' })
   findAll(@Query() query: QueryUnitDto) {
     return this.unitsService.findAll(query);
   }
 
+  @Public()
   @Get('stats/by-project/:projectId')
   @ApiOperation({ summary: 'Aggregated stats for a project (status counts, pricing, etc.)' })
   stats(@Param('projectId', ParseObjectIdPipe) projectId: string) {
     return this.unitsService.statsByProject(projectId);
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get a single unit by id' })
   findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.unitsService.findOne(id);
   }
 
+  @Public()
   @Post(':id/view')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Increment unit view counter' })

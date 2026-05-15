@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { Public } from '@/auth/decorators/public.decorator';
 import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe';
 import { BuildingsService } from './buildings.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
@@ -29,18 +30,21 @@ export class BuildingsController {
     return this.buildingsService.create(dto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'List buildings with filtering and pagination' })
   findAll(@Query() query: QueryBuildingDto) {
     return this.buildingsService.findAll(query);
   }
 
+  @Public()
   @Get('by-project/:projectId')
   @ApiOperation({ summary: 'List all buildings within a project' })
   findByProject(@Param('projectId', ParseObjectIdPipe) projectId: string) {
     return this.buildingsService.findByProject(projectId);
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get a single building by id' })
   findOne(@Param('id', ParseObjectIdPipe) id: string) {

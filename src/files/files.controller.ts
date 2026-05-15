@@ -13,6 +13,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
+import { Public } from '@/auth/decorators/public.decorator';
 import { ResponseBody } from '@/common/dto/response-body.dto';
 import { FilesService } from './files.service';
 
@@ -43,6 +44,7 @@ export class FilesController {
     });
   }
 
+  @Public()
   @Get(':uuid')
   @ApiOperation({ summary: 'Download a file by uuid' })
   async download(

@@ -147,6 +147,28 @@ export class CreateProjectDto {
   @IsOptional()
   @IsBoolean()
   isFeatured?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  googleMapLink?: string;
+
+  @ApiPropertyOptional({ description: 'Min apartment size (m²)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  minSizeApartment?: number;
+
+  @ApiPropertyOptional({ description: 'Max apartment size (m²)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  maxSizeApartment?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  benefits?: string;
 }
 
 export class CreateProjectRequest extends RequestBody<CreateProjectDto> {

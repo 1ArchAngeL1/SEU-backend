@@ -5,7 +5,11 @@
       "PowerShell(Push-Location \"C:\\\\Users\\\\leogo\\\\seu\\\\SEU\"; try { $out = npx tsc --noEmit -p tsconfig.json 2>&1; \"EXIT=$LASTEXITCODE\"; $out | Select-Object -First 80 } finally { Pop-Location })",
       "PowerShell(Push-Location \"C:\\\\Users\\\\leogo\\\\seu\\\\SEU\"; try { $out = npx tsc --noEmit -p tsconfig.json 2>&1; \"EXIT=$LASTEXITCODE\"; $out | Select-Object -First 40 } finally { Pop-Location })",
       "PowerShell(Push-Location \"C:\\\\Users\\\\leogo\\\\seu\\\\SEU\"; try { $out = npx tsc --noEmit -p tsconfig.json 2>&1; \"EXIT=$LASTEXITCODE\"; $out | Select-Object -First 60 } finally { Pop-Location })",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cat /Users/leogogichaishvili/SEU/SEU-backend/package-lock.json | head -5 && npm ls bcrypt bcryptjs 2>&1 | head -5)",
+      "Bash(npm install:*)",
+      "Bash(timeout 10 npm run start 2>&1 || true)",
+      "Bash(npx nest:*)"
     ]
   }
 }

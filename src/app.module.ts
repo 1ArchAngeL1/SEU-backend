@@ -9,7 +9,11 @@ import { FilesModule } from './files/files.module';
 import { FloorsModule } from './floors/floors.module';
 import { ProjectsModule } from './projects/projects.module';
 import { UnitsModule } from './units/units.module';
+import { PartnersModule } from './partners/partners.module';
 import { RoomModule } from './room/room.module';
+import { ContactsModule } from './contacts/contacts.module';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +33,10 @@ import { RoomModule } from './room/room.module';
     UnitsModule,
     FilesModule,
     RoomModule,
+    PartnersModule,
+    ContactsModule,
+    UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

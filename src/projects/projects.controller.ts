@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { Public } from '@/auth/decorators/public.decorator';
 import { ResponseBody } from '@/common/dto/response-body.dto';
 import { ProjectsService } from './projects.service';
 import { CreateProjectRequest } from '@/projects/dto/create-project.dto';
@@ -29,6 +30,7 @@ export class ProjectsController {
     return ResponseBody.ok(project);
   }
 
+  @Public()
   @Post('search')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'List projects with filtering, pagination, and sort in body' })
@@ -37,6 +39,7 @@ export class ProjectsController {
     return ResponseBody.paginated(result);
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get a single project by id' })
   async findOne(@Param('id') id: string) {

@@ -16,7 +16,7 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix);
 
   app.enableCors({
-    origin: corsOrigin === '*' ? true : corsOrigin.split(',').map((s) => s.trim()),
+    origin: ['http://localhost:3000', 'http://192.168.100.5:3000'],
     credentials: true,
   });
 
@@ -33,6 +33,7 @@ async function bootstrap() {
     .setTitle('SEU Development API')
     .setDescription('Backend for SEU Development — projects, buildings, units.')
     .setVersion('0.1.0')
+    .addBearerAuth()
     .addTag('projects')
     .addTag('buildings')
     .addTag('units')
@@ -40,7 +41,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(`${apiPrefix}/docs`, app, document);
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   // eslint-disable-next-line no-console
   console.log(`SEU backend running on http://localhost:${port}/${apiPrefix}`);
   // eslint-disable-next-line no-console

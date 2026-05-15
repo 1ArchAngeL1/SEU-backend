@@ -101,6 +101,18 @@ export class Project {
 
   @Prop({ default: false, index: true })
   isFeatured: boolean;
+
+  @Prop()
+  googleMapLink?: string;
+
+  @Prop({ min: 0 })
+  minSizeApartment?: number;
+
+  @Prop({ min: 0 })
+  maxSizeApartment?: number;
+
+  @Prop()
+  benefits?: string;
 }
 
 export type ProjectDocument = HydratedDocument<Project>;
