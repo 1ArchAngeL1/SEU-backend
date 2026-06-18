@@ -20,6 +20,7 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://192.168.100.5:3000',
       'https://seudevelopment.grena.ge',
+      '*',
     ],
     credentials: true,
   });
