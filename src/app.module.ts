@@ -14,6 +14,7 @@ import { RoomModule } from './room/room.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { NewsModule } from './news/news.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AuthModule } from './auth/auth.module';
     ContactsModule,
     UserModule,
     AuthModule,
+    NewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

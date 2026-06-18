@@ -1,6 +1,7 @@
 export enum RoomType {
   BEDROOM = 'bedroom',
   LIVING_ROOM = 'living_room',
+  STUDIO = 'studio',
   KITCHEN = 'kitchen',
   BATHROOM = 'bathroom',
   TOILET = 'toilet',

@@ -15,10 +15,11 @@ import {
 import { RoomType } from '../enums/room.enums';
 
 export class RoomDto {
-  @ApiProperty({ example: 'Master Bedroom' })
+  @ApiPropertyOptional({ example: 'Master Bedroom' })
+  @IsOptional()
   @IsString()
   @Length(1, 100)
-  name: string;
+  name?: string;
 
   @ApiProperty({ enum: RoomType })
   @IsEnum(RoomType)
