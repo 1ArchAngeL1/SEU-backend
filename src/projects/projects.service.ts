@@ -36,8 +36,20 @@ export class ProjectsService {
 
     const filter: FilterQuery<ProjectDocument> = {};
     if (status) filter.status = status;
-    if (city) filter['location.city'] = city;
-    if (district) filter['location.district'] = district;
+    if (city) {
+      filter.$or = [
+        ...(filter.$or ?? []),
+        { 'location.cityEn': city },
+        { 'location.cityKa': city },
+      ];
+    }
+    if (district) {
+      filter.$or = [
+        ...(filter.$or ?? []),
+        { 'location.districtEn': district },
+        { 'location.districtKa': district },
+      ];
+    }
     if (typeof isActive === 'boolean') filter.isActive = isActive;
     if (typeof isFeatured === 'boolean') filter.isFeatured = isFeatured;
     if (q) filter.$text = { $search: q };

@@ -17,7 +17,6 @@ import {
 } from 'class-validator';
 
 import { PolygonPointDto } from '../../common/dto/polygon-point.dto';
-import { LocalizedStringDto } from '../../common/types/localized-string';
 import { RoomDto } from '../../room/dto/room.dto';
 import { FurnishingStatus, UnitStatus, UnitType } from '../enums/unit.enums';
 
@@ -281,11 +280,15 @@ export class CreateUnitDto {
   @IsString()
   virtualTourUrl?: string;
 
-  @ApiPropertyOptional({ type: LocalizedStringDto })
+  @ApiPropertyOptional({ description: 'Description (English)' })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  description?: LocalizedStringDto;
+  @IsString()
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Description (Georgian)' })
+  @IsOptional()
+  @IsString()
+  descriptionKa?: string;
 
   @ApiPropertyOptional({ type: ReservationDto })
   @IsOptional()

@@ -5,13 +5,15 @@ import {
   PolygonPoint,
   PolygonPointSchema,
 } from '@/common/schemas/polygon-point.schema';
-import { LocalizedString } from '@/common/types/localized-string';
 import { BuildingStatus } from '../enums/building-status.enum';
 
 @Schema({ _id: false })
 class BuildingLocation {
-  @Prop()
-  address?: string;
+  @Prop({ trim: true })
+  addressEn?: string;
+
+  @Prop({ trim: true })
+  addressKa?: string;
 }
 
 @Schema({
@@ -35,8 +37,11 @@ export class Building {
   })
   project: Types.ObjectId;
 
-  @Prop({ type: LocalizedString, required: true })
-  name: LocalizedString; // e.g. "Block A" or "Tower 1"
+  @Prop({ required: true, trim: true })
+  nameEn: string; // e.g. "Block A" or "Tower 1"
+
+  @Prop({ required: true, trim: true })
+  nameKa: string;
 
   @Prop({ required: true, trim: true, uppercase: true, index: true })
   block: string; // e.g. "A", "B", "C"
@@ -74,8 +79,11 @@ export class Building {
   @Prop()
   mainImage?: string;
 
-  @Prop({ type: LocalizedString })
-  description?: LocalizedString;
+  @Prop({ trim: true })
+  descriptionEn?: string;
+
+  @Prop({ trim: true })
+  descriptionKa?: string;
 
   @Prop()
   renderImage?: string;
@@ -92,10 +100,8 @@ export const BuildingSchema = SchemaFactory.createForClass(Building);
 
 BuildingSchema.index({ project: 1, block: 1 }, { unique: true });
 BuildingSchema.index({
-  'name.ka': 'text',
-  'name.en': 'text',
-  'name.ru': 'text',
-  'description.ka': 'text',
-  'description.en': 'text',
-  'description.ru': 'text',
+  nameEn: 'text',
+  nameKa: 'text',
+  descriptionEn: 'text',
+  descriptionKa: 'text',
 });

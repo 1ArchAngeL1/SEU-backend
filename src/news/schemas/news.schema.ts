@@ -14,11 +14,17 @@ import { HydratedDocument } from 'mongoose';
   },
 })
 export class News {
-  @Prop({ required: true })
-  header: string;
+  @Prop({ required: true, trim: true })
+  headerEn: string;
 
-  @Prop({ required: true })
-  description: string;
+  @Prop({ required: true, trim: true })
+  headerKa: string;
+
+  @Prop({ required: true, trim: true })
+  descriptionEn: string;
+
+  @Prop({ required: true, trim: true })
+  descriptionKa: string;
 
   @Prop({ type: [String], default: [] })
   image: string[];

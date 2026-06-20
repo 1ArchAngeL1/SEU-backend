@@ -1,12 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
-  IsInt,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -16,25 +15,40 @@ import {
 } from 'class-validator';
 
 import { ProjectStatus } from '../enums/project-status.enum';
-import { LocalizedStringDto } from '@/common/types/localized-string';
 import { RequestBody } from '@/common/dto/request-body.dto';
-import { UpdateProjectDto } from '@/projects/dto/update-project.dto';
 
 export class GeoLocationDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Address (English)' })
   @IsString()
+  @IsNotEmpty()
   @Length(1, 300)
-  address: string;
+  addressEn: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty({ description: 'Address (Georgian)' })
+  @IsString()
+  @IsNotEmpty()
+  @Length(1, 300)
+  addressKa: string;
+
+  @ApiPropertyOptional({ description: 'City (English)' })
   @IsOptional()
   @IsString()
-  city?: string;
+  cityEn?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'City (Georgian)' })
   @IsOptional()
   @IsString()
-  district?: string;
+  cityKa?: string;
+
+  @ApiPropertyOptional({ description: 'District (English)' })
+  @IsOptional()
+  @IsString()
+  districtEn?: string;
+
+  @ApiPropertyOptional({ description: 'District (Georgian)' })
+  @IsOptional()
+  @IsString()
+  districtKa?: string;
 }
 
 export class PriceRangeDto {
@@ -69,16 +83,25 @@ export class PriceRangeDto {
 }
 
 export class CreateProjectDto {
-  @ApiProperty({ type: LocalizedStringDto })
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  name: LocalizedStringDto;
+  @ApiProperty({ description: 'Project name (English)' })
+  @IsString()
+  @IsNotEmpty()
+  nameEn: string;
 
-  @ApiPropertyOptional({ type: LocalizedStringDto })
+  @ApiProperty({ description: 'Project name (Georgian)' })
+  @IsString()
+  @IsNotEmpty()
+  nameKa: string;
+
+  @ApiPropertyOptional({ description: 'Description (English)' })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  description?: LocalizedStringDto;
+  @IsString()
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Description (Georgian)' })
+  @IsOptional()
+  @IsString()
+  descriptionKa?: string;
 
   @ApiProperty({ type: GeoLocationDto })
   @ValidateNested()
@@ -165,10 +188,15 @@ export class CreateProjectDto {
   @Min(0)
   maxSizeApartment?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Benefits (English)' })
   @IsOptional()
   @IsString()
-  benefits?: string;
+  benefitsEn?: string;
+
+  @ApiPropertyOptional({ description: 'Benefits (Georgian)' })
+  @IsOptional()
+  @IsString()
+  benefitsKa?: string;
 }
 
 export class CreateProjectRequest extends RequestBody<CreateProjectDto> {

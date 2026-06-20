@@ -66,7 +66,7 @@ export class BuildingsService {
     const [data, total] = await Promise.all([
       this.buildingModel
         .find(filter)
-        .populate('project', 'name')
+        .populate('project', 'nameEn nameKa')
         .sort(sortBy)
         .skip(skip)
         .limit(limit)
@@ -84,7 +84,7 @@ export class BuildingsService {
   }
 
   async findOne(id: string): Promise<BuildingDocument> {
-    const building = await this.buildingModel.findById(id).populate('project', 'name').exec();
+    const building = await this.buildingModel.findById(id).populate('project', 'nameEn nameKa').exec();
     if (!building) throw new NotFoundException(`Building '${id}' not found`);
     return building;
   }
@@ -116,7 +116,7 @@ export class BuildingsService {
     const payload = this.resolvePolygon(dto);
     const updated = await this.buildingModel
       .findByIdAndUpdate(id, payload, { new: true, runValidators: true })
-      .populate('project', 'name')
+      .populate('project', 'nameEn nameKa')
       .exec();
 
     return updated!;

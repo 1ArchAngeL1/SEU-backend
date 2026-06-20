@@ -30,7 +30,10 @@ export class PartnersService {
 
     const query: Record<string, unknown> = {};
     if (filter?.q) {
-      query.name = { $regex: filter.q, $options: 'i' };
+      query.$or = [
+        { nameEn: { $regex: filter.q, $options: 'i' } },
+        { nameKa: { $regex: filter.q, $options: 'i' } },
+      ];
     }
 
     const sortBy =

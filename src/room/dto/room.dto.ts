@@ -15,11 +15,17 @@ import {
 import { RoomType } from '../enums/room.enums';
 
 export class RoomDto {
-  @ApiPropertyOptional({ example: 'Master Bedroom' })
+  @ApiPropertyOptional({ description: 'Name (English)', example: 'Master Bedroom' })
   @IsOptional()
   @IsString()
   @Length(1, 100)
-  name?: string;
+  nameEn?: string;
+
+  @ApiPropertyOptional({ description: 'Name (Georgian)', example: 'სამთავრო საძინებელი' })
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  nameKa?: string;
 
   @ApiProperty({ enum: RoomType })
   @IsEnum(RoomType)
@@ -31,11 +37,17 @@ export class RoomDto {
   @Min(0)
   size?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Description (English)' })
   @IsOptional()
   @IsString()
   @Length(0, 500)
-  description?: string;
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Description (Georgian)' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 500)
+  descriptionKa?: string;
 }
 
 export class SyncRoomsDto {

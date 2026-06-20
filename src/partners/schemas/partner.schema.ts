@@ -14,11 +14,17 @@ import { HydratedDocument } from 'mongoose';
   },
 })
 export class Partner {
-  @Prop({ required: true })
-  name: string;
+  @Prop({ required: true, trim: true })
+  nameEn: string;
 
-  @Prop()
-  description?: string;
+  @Prop({ required: true, trim: true })
+  nameKa: string;
+
+  @Prop({ trim: true })
+  descriptionEn?: string;
+
+  @Prop({ trim: true })
+  descriptionKa?: string;
 
   @Prop()
   logoId?: string;
@@ -29,8 +35,11 @@ export class Partner {
   @Prop()
   phone?: string;
 
-  @Prop()
-  address?: string;
+  @Prop({ trim: true })
+  addressEn?: string;
+
+  @Prop({ trim: true })
+  addressKa?: string;
 
   @Prop()
   facebookLink?: string;

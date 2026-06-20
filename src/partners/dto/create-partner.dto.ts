@@ -1,18 +1,29 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 
 import { RequestBody } from '@/common/dto/request-body.dto';
 
 export class CreatePartnerDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Name (English)' })
   @IsString()
-  name: string;
+  @IsNotEmpty()
+  nameEn: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty({ description: 'Name (Georgian)' })
+  @IsString()
+  @IsNotEmpty()
+  nameKa: string;
+
+  @ApiPropertyOptional({ description: 'Description (English)' })
   @IsOptional()
   @IsString()
-  description?: string;
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Description (Georgian)' })
+  @IsOptional()
+  @IsString()
+  descriptionKa?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -29,10 +40,15 @@ export class CreatePartnerDto {
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Address (English)' })
   @IsOptional()
   @IsString()
-  address?: string;
+  addressEn?: string;
+
+  @ApiPropertyOptional({ description: 'Address (Georgian)' })
+  @IsOptional()
+  @IsString()
+  addressKa?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

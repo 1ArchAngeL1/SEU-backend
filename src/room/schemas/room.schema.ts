@@ -5,7 +5,10 @@ import { RoomType } from '../enums/room.enums';
 @Schema({ _id: false })
 export class Room {
   @Prop({ trim: true })
-  name?: string;
+  nameEn?: string;
+
+  @Prop({ trim: true })
+  nameKa?: string;
 
   @Prop({ enum: RoomType, required: true })
   type: RoomType;
@@ -14,7 +17,10 @@ export class Room {
   size?: number;
 
   @Prop({ trim: true })
-  description?: string;
+  descriptionEn?: string;
+
+  @Prop({ trim: true })
+  descriptionKa?: string;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

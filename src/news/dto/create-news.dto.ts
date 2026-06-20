@@ -1,17 +1,29 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 import { RequestBody } from '@/common/dto/request-body.dto';
 
 export class CreateNewsDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Header (English)' })
   @IsString()
-  header: string;
+  @IsNotEmpty()
+  headerEn: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Header (Georgian)' })
   @IsString()
-  description: string;
+  @IsNotEmpty()
+  headerKa: string;
+
+  @ApiProperty({ description: 'Description (English)' })
+  @IsString()
+  @IsNotEmpty()
+  descriptionEn: string;
+
+  @ApiProperty({ description: 'Description (Georgian)' })
+  @IsString()
+  @IsNotEmpty()
+  descriptionKa: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()

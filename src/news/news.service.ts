@@ -31,7 +31,8 @@ export class NewsService {
     const query: Record<string, unknown> = {};
     if (filter?.q) {
       query.$or = [
-        { header: { $regex: filter.q, $options: 'i' } },
+        { headerEn: { $regex: filter.q, $options: 'i' } },
+        { headerKa: { $regex: filter.q, $options: 'i' } },
         { tags: { $regex: filter.q, $options: 'i' } },
       ];
     }

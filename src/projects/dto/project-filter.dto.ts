@@ -11,12 +11,12 @@ export class ProjectFilterDto {
   @IsEnum(ProjectStatus)
   status?: ProjectStatus;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'City — matched against either English or Georgian.' })
   @IsOptional()
   @IsString()
   city?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'District — matched against either English or Georgian.' })
   @IsOptional()
   @IsString()
   district?: string;

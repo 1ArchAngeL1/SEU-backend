@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
-import { LocalizedString } from '@/common/types/localized-string';
-
 @Schema({
   timestamps: true,
   toJSON: {
@@ -24,8 +22,11 @@ export class ApartmentType {
   })
   project: Types.ObjectId;
 
-  @Prop({ type: LocalizedString })
-  name?: LocalizedString;
+  @Prop({ trim: true })
+  nameEn?: string;
+
+  @Prop({ trim: true })
+  nameKa?: string;
 
   @Prop({ required: true, min: 0, index: true })
   bedrooms: number;
@@ -39,8 +40,11 @@ export class ApartmentType {
   @Prop({ type: String })
   image?: string;
 
-  @Prop({ type: LocalizedString })
-  description?: LocalizedString;
+  @Prop({ trim: true })
+  descriptionEn?: string;
+
+  @Prop({ trim: true })
+  descriptionKa?: string;
 
   @Prop({ default: true, index: true })
   isActive: boolean;

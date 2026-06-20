@@ -5,7 +5,6 @@ import {
   PolygonPoint,
   PolygonPointSchema,
 } from '@/common/schemas/polygon-point.schema';
-import { LocalizedString } from '@/common/types/localized-string';
 import { Room, RoomSchema } from '@/room/schemas/room.schema';
 import { FurnishingStatus, UnitStatus, UnitType } from '../enums/unit.enums';
 import { Price } from '@/units/schemas/price.schema';
@@ -118,8 +117,11 @@ export class Unit {
   @Prop()
   videoTourUrl?: string;
 
-  @Prop({ type: LocalizedString })
-  description?: LocalizedString;
+  @Prop({ trim: true })
+  descriptionEn?: string;
+
+  @Prop({ trim: true })
+  descriptionKa?: string;
 
   @Prop({ type: Reservation })
   reservation?: Reservation;
@@ -146,7 +148,6 @@ UnitSchema.index({ project: 1, type: 1 });
 UnitSchema.index({ project: 1, bedrooms: 1, totalSize: 1 });
 UnitSchema.index({ 'price.amount': 1 });
 UnitSchema.index({
-  'description.ka': 'text',
-  'description.en': 'text',
-  'description.ru': 'text',
+  descriptionEn: 'text',
+  descriptionKa: 'text',
 });

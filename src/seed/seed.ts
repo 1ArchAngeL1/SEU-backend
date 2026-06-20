@@ -26,12 +26,18 @@ type BlockSpec = {
 };
 
 const PROJECT = {
-  name: { ka: 'ვაკე რეზიდენსი', en: 'Vake Residences' },
-  description: {
-    ka: 'პრემიუმ კლასის საცხოვრებელი კომპლექსი ვაკეში სამი კორპუსით.',
-    en: 'Premium residential complex in Vake with three blocks.',
+  nameEn: 'Vake Residences',
+  nameKa: 'ვაკე რეზიდენსი',
+  descriptionEn: 'Premium residential complex in Vake with three blocks.',
+  descriptionKa: 'პრემიუმ კლასის საცხოვრებელი კომპლექსი ვაკეში სამი კორპუსით.',
+  location: {
+    addressEn: 'Chavchavadze Ave 75',
+    addressKa: 'ჭავჭავაძის გამზ. 75',
+    cityEn: 'Tbilisi',
+    cityKa: 'თბილისი',
+    districtEn: 'Vake',
+    districtKa: 'ვაკე',
   },
-  location: { address: 'Chavchavadze Ave 75', city: 'Tbilisi', district: 'Vake' },
   status: ProjectStatus.UNDER_CONSTRUCTION,
   startDate: new Date('2024-03-01'),
   expectedCompletionDate: new Date('2027-09-30'),
@@ -213,17 +219,16 @@ async function run() {
 
     const building = await BuildingModel.create({
       project: project._id,
-      name: { ka: spec.nameKa, en: spec.nameEn },
+      nameEn: spec.nameEn,
+      nameKa: spec.nameKa,
       block: spec.block,
       status: spec.status,
       basementFloors: 1,
       parkingSpaces: Math.round(totalUnits * 0.8),
       constructionProgress: spec.constructionProgress,
       isActive: true,
-      description: {
-        ka: `${spec.nameKa} — ${spec.floors} სართული, ${totalUnits} ბინა.`,
-        en: `${spec.nameEn} — ${spec.floors} floors, ${totalUnits} apartments.`,
-      },
+      descriptionEn: `${spec.nameEn} — ${spec.floors} floors, ${totalUnits} apartments.`,
+      descriptionKa: `${spec.nameKa} — ${spec.floors} სართული, ${totalUnits} ბინა.`,
     });
 
     const floorDocs = await FloorModel.insertMany(

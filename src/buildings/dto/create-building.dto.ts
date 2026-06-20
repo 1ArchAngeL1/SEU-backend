@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsInt,
   IsMongoId,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -16,37 +17,18 @@ import {
 } from 'class-validator';
 
 import { PolygonPointDto } from '@/common/dto/polygon-point.dto';
-import { LocalizedStringDto } from '@/common/types/localized-string';
 import { BuildingStatus } from '../enums/building-status.enum';
 
-export class FloorPlanDto {
-  @ApiProperty({ type: LocalizedStringDto })
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  name: LocalizedStringDto;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  imageUrl?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  pdfUrl?: string;
-
-  @ApiPropertyOptional({ type: LocalizedStringDto })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  description?: LocalizedStringDto;
-}
-
 export class BuildingLocationDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Address (English)' })
   @IsOptional()
   @IsString()
-  address?: string;
+  addressEn?: string;
+
+  @ApiPropertyOptional({ description: 'Address (Georgian)' })
+  @IsOptional()
+  @IsString()
+  addressKa?: string;
 }
 
 export class CreateBuildingDto {
@@ -54,10 +36,15 @@ export class CreateBuildingDto {
   @IsMongoId()
   project: string;
 
-  @ApiProperty({ type: LocalizedStringDto })
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  name: LocalizedStringDto;
+  @ApiProperty({ description: 'Building name (English)' })
+  @IsString()
+  @IsNotEmpty()
+  nameEn: string;
+
+  @ApiProperty({ description: 'Building name (Georgian)' })
+  @IsString()
+  @IsNotEmpty()
+  nameKa: string;
 
   @ApiProperty({ example: 'A' })
   @IsString()
@@ -123,18 +110,15 @@ export class CreateBuildingDto {
   @IsString()
   mainImage?: string;
 
-  @ApiPropertyOptional({ type: [FloorPlanDto] })
+  @ApiPropertyOptional({ description: 'Description (English)' })
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => FloorPlanDto)
-  floorPlans?: FloorPlanDto[];
+  @IsString()
+  descriptionEn?: string;
 
-  @ApiPropertyOptional({ type: LocalizedStringDto })
+  @ApiPropertyOptional({ description: 'Description (Georgian)' })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  description?: LocalizedStringDto;
+  @IsString()
+  descriptionKa?: string;
 
   @ApiPropertyOptional({ description: 'Building render image for interactive floor polygon mapping' })
   @IsOptional()

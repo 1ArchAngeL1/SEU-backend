@@ -1,25 +1,33 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-import { LocalizedString } from '../../common/types/localized-string';
 import { ProjectStatus } from '../enums/project-status.enum';
 import { Currency } from '@/common/enums/currency.enum';
 
 @Schema({ _id: false })
 class GeoLocation {
-  @Prop({ required: true })
-  address: string;
+  @Prop({ required: true, trim: true })
+  addressEn: string;
 
-  @Prop()
-  city?: string;
+  @Prop({ required: true, trim: true })
+  addressKa: string;
 
-  @Prop()
-  district?: string;
+  @Prop({ trim: true })
+  cityEn?: string;
+
+  @Prop({ trim: true })
+  cityKa?: string;
+
+  @Prop({ trim: true })
+  districtEn?: string;
+
+  @Prop({ trim: true })
+  districtKa?: string;
 }
 
 @Schema({ _id: false })
 class PriceRange {
-  @Prop({enum: Currency, default: Currency.USD })
+  @Prop({ enum: Currency, default: Currency.USD })
   currency: Currency;
 
   @Prop()
@@ -48,11 +56,17 @@ class PriceRange {
   },
 })
 export class Project {
-  @Prop({ type: LocalizedString, required: true })
-  name: LocalizedString;
+  @Prop({ required: true, trim: true })
+  nameEn: string;
 
-  @Prop({ type: LocalizedString })
-  description?: LocalizedString;
+  @Prop({ required: true, trim: true })
+  nameKa: string;
+
+  @Prop({ trim: true })
+  descriptionEn?: string;
+
+  @Prop({ trim: true })
+  descriptionKa?: string;
 
   @Prop({ type: GeoLocation, required: true })
   location: GeoLocation;
@@ -111,18 +125,19 @@ export class Project {
   @Prop({ min: 0 })
   maxSizeApartment?: number;
 
-  @Prop()
-  benefits?: string;
+  @Prop({ trim: true })
+  benefitsEn?: string;
+
+  @Prop({ trim: true })
+  benefitsKa?: string;
 }
 
 export type ProjectDocument = HydratedDocument<Project>;
 export const ProjectSchema = SchemaFactory.createForClass(Project);
 
 ProjectSchema.index({
-  'name.ka': 'text',
-  'name.en': 'text',
-  'name.ru': 'text',
-  'description.ka': 'text',
-  'description.en': 'text',
-  'description.ru': 'text',
+  nameEn: 'text',
+  nameKa: 'text',
+  descriptionEn: 'text',
+  descriptionKa: 'text',
 });

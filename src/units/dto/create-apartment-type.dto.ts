@@ -11,7 +11,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-import { LocalizedStringDto } from '@/common/types/localized-string';
 import { RequestBody } from '@/common/dto/request-body.dto';
 
 export class CreateApartmentTypeDto {
@@ -19,11 +18,15 @@ export class CreateApartmentTypeDto {
   @IsMongoId()
   project: string;
 
-  @ApiPropertyOptional({ type: LocalizedStringDto })
+  @ApiPropertyOptional({ description: 'Name (English)' })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  name?: LocalizedStringDto;
+  @IsString()
+  nameEn?: string;
+
+  @ApiPropertyOptional({ description: 'Name (Georgian)' })
+  @IsOptional()
+  @IsString()
+  nameKa?: string;
 
   @ApiProperty({ description: 'Number of bedrooms' })
   @IsInt()
@@ -45,11 +48,15 @@ export class CreateApartmentTypeDto {
   @IsString()
   image?: string;
 
-  @ApiPropertyOptional({ type: LocalizedStringDto })
+  @ApiPropertyOptional({ description: 'Description (English)' })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedStringDto)
-  description?: LocalizedStringDto;
+  @IsString()
+  descriptionEn?: string;
+
+  @ApiPropertyOptional({ description: 'Description (Georgian)' })
+  @IsOptional()
+  @IsString()
+  descriptionKa?: string;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()

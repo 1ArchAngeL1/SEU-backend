@@ -86,8 +86,8 @@ export class UnitsService {
     const [data, total] = await Promise.all([
       this.unitModel
         .find(filter)
-        .populate('project', 'name')
-        .populate('building', 'name block')
+        .populate('project', 'nameEn nameKa')
+        .populate('building', 'nameEn nameKa block')
         .populate('floor', 'floorNumber')
         .sort(sortBy)
         .skip(skip)
@@ -108,8 +108,8 @@ export class UnitsService {
   async findOne(id: string): Promise<UnitDocument> {
     const unit = await this.unitModel
       .findById(id)
-      .populate('project', 'name')
-      .populate('building', 'name block')
+      .populate('project', 'nameEn nameKa')
+      .populate('building', 'nameEn nameKa block')
       .populate('floor', 'floorNumber')
       .exec();
     if (!unit) throw new NotFoundException(`Unit '${id}' not found`);
@@ -143,8 +143,8 @@ export class UnitsService {
 
     const updated = await this.unitModel
       .findByIdAndUpdate(id, payload, { new: true, runValidators: true })
-      .populate('project', 'name')
-      .populate('building', 'name block')
+      .populate('project', 'nameEn nameKa')
+      .populate('building', 'nameEn nameKa block')
       .exec();
 
     if (dto.status && dto.status !== existing.status) {
@@ -170,8 +170,8 @@ export class UnitsService {
 
     const updated = await this.unitModel
       .findByIdAndUpdate(id, update, { new: true, runValidators: true })
-      .populate('project', 'name')
-      .populate('building', 'name block')
+      .populate('project', 'nameEn nameKa')
+      .populate('building', 'nameEn nameKa block')
       .exec();
 
     if (!updated) throw new NotFoundException(`Unit '${id}' not found`);
