@@ -66,7 +66,7 @@ export class CreateBuildingDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  basementFloors?: number;
+  floorsAboveGround?: number;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
@@ -90,7 +90,7 @@ export class CreateBuildingDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  parkingSpaces?: number;
+  basementLevels?: number;
 
   @ApiPropertyOptional({ minimum: 0, maximum: 100 })
   @IsOptional()

@@ -53,7 +53,7 @@ export class Building {
   status: BuildingStatus;
 
   @Prop({ default: 0, min: 0 })
-  basementFloors: number;
+  floorsAboveGround: number;
 
   @Prop({ default: 0, min: 0 })
   totalUnits: number;
@@ -68,7 +68,7 @@ export class Building {
   livableArea?: number; // habitable m²
 
   @Prop({ default: 0, min: 0 })
-  parkingSpaces: number;
+  basementLevels: number;
 
   @Prop({ min: 0, max: 100, default: 0 })
   constructionProgress: number; // %
