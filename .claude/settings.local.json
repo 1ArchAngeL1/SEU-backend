@@ -9,7 +9,24 @@
       "Bash(cat /Users/leogogichaishvili/SEU/SEU-backend/package-lock.json | head -5 && npm ls bcrypt bcryptjs 2>&1 | head -5)",
       "Bash(npm install:*)",
       "Bash(timeout 10 npm run start 2>&1 || true)",
-      "Bash(npx nest:*)"
+      "Bash(npx nest:*)",
+      "Bash(curl -s -m 20 \"https://seudevelopment.grena.ge/api/buildings\")",
+      "Bash(python3 -c ' *)",
+      "Read(//Users/leogogichaishvili/Desktop/**)",
+      "Bash(python3 -)",
+      "Bash(grep -nA12 \"create\\\\|findByBuildingAndNumber\" src/floors/floors.service.ts)",
+      "Bash(export SEU_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YTM2OWZiZjhjN2JhMjhmZTI4ZjFhMjEiLCJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzg0MjkyNjQ3LCJleHAiOjE3ODU1MDIyNDd9.MovW8vl2jeinByTzDGoGD0btdAzDCXuP6Gxak6bDehQ\")",
+      "Bash(curl -s -m 20 -o /dev/null -w 'auth probe \\(empty POST /units\\) -> HTTP %{http_code}\\\\n' -X POST https://seudevelopment.grena.ge/api/units -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -d '{}')",
+      "Bash(python3 import_block6.py)",
+      "Bash(python3 parse_block4.py)",
+      "Bash(export SEU_BUILDING=\"6a67997f6e75a139093f67cf\")",
+      "Bash(export SEU_PAYLOAD=\"units_payload_block4.json\")",
+      "Read(//Users/leogogichaishvili/SEU/**)",
+      "Bash(grep -nA30 \"interface Partner\\\\b\\\\|type Partner\\\\b\\\\|Partner =\\\\|CreatePartnerInput\" src/model/types/api.ts)",
+      "Bash(echo \"exit code: $?\")",
+      "Read(//tmp/**)",
+      "Bash(python3 -c \"import json;d=json.load\\(open\\('messages/en.json'\\)\\);print\\(json.dumps\\({'landing':d.get\\('landing'\\)},ensure_ascii=False,indent=1\\)\\)\")",
+      "Bash(python3 -c \"import json;d=json.load\\(open\\('messages/ka.json'\\)\\);print\\(json.dumps\\({'landing':d.get\\('landing'\\)},ensure_ascii=False,indent=1\\)\\)\")"
     ]
   }
 }

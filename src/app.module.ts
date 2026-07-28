@@ -10,6 +10,7 @@ import { FloorsModule } from './floors/floors.module';
 import { ProjectsModule } from './projects/projects.module';
 import { UnitsModule } from './units/units.module';
 import { PartnersModule } from './partners/partners.module';
+import { LandingPartnersModule } from './landing-partners/landing-partners.module';
 import { RoomModule } from './room/room.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { UserModule } from './user/user.module';
@@ -44,6 +45,7 @@ import { Unit, UnitSchema } from './units/schemas/unit.schema';
     FilesModule,
     RoomModule,
     PartnersModule,
+    LandingPartnersModule,
     ContactsModule,
     UserModule,
     AuthModule,

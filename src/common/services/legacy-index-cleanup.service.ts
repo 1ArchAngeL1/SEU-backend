@@ -20,6 +20,7 @@ export class LegacyIndexCleanupService implements OnModuleInit {
     await this.dropStaleTextIndexes(this.projectModel, 'Project');
     await this.dropStaleTextIndexes(this.buildingModel, 'Building');
     await this.dropStaleTextIndexes(this.unitModel, 'Unit');
+    await this.renameBuildingFloorFields();
   }
 
   private async dropStaleTextIndexes(model: Model<any>, label: string): Promise<void> {
@@ -37,6 +38,40 @@ export class LegacyIndexCleanupService implements OnModuleInit {
       }
     } catch (err) {
       this.logger.warn(`Index cleanup on ${label} skipped: ${(err as Error).message}`);
+    }
+  }
+
+  /**
+   * One-shot rename of pre-rename Building documents.
+   *   basementFloors  → floorsAboveGround
+   *   parkingSpaces   → basementLevels
+   * Safe to run repeatedly — only acts on docs that still carry the old names.
+   */
+  private async renameBuildingFloorFields(): Promise<void> {
+    try {
+      const result = await this.buildingModel.collection.updateMany(
+        {
+          $or: [
+            { basementFloors: { $exists: true } },
+            { parkingSpaces: { $exists: true } },
+          ],
+        },
+        {
+          $rename: {
+            basementFloors: 'floorsAboveGround',
+            parkingSpaces: 'basementLevels',
+          },
+        } as any,
+      );
+      if (result.modifiedCount > 0) {
+        this.logger.log(
+          `Renamed legacy Building fields on ${result.modifiedCount} document(s)`,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Building field rename skipped: ${(err as Error).message}`,
+      );
     }
   }
 }

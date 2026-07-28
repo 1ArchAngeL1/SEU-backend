@@ -180,31 +180,7 @@ export class CreateUnitDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  bedrooms?: number;
-
-  @ApiPropertyOptional({ default: 0 })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  bathrooms?: number;
-
-  @ApiPropertyOptional({ default: 0 })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  livingRooms?: number;
-
-  @ApiPropertyOptional({ default: 0 })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  balconies?: number;
-
-  @ApiPropertyOptional({ default: 0 })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  terraces?: number;
+  roomCount?: number;
 
   @ApiProperty()
   @IsNumber()

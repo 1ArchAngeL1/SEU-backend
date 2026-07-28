@@ -66,20 +66,8 @@ export class Unit {
   @Prop({ type: [RoomSchema], default: [] })
   rooms: Room[];
 
-  @Prop({ default: 0, min: 0, required: false })
-  bedrooms?: number;
-
-  @Prop({ default: 0, min: 0, required: false })
-  bathrooms?: number;
-
-  @Prop({ default: 0, min: 0, required: false })
-  livingRooms?: number;
-
-  @Prop({ default: 0, min: 0, required: false })
-  balconies?: number;
-
-  @Prop({ default: 0, min: 0, required: false })
-  terraces?: number;
+  @Prop({ default: 0, min: 0, required: false, index: true })
+  roomCount?: number;
 
   @Prop({ required: true, min: 0, index: true })
   totalSize: number;
@@ -145,7 +133,7 @@ export const UnitSchema = SchemaFactory.createForClass(Unit);
 UnitSchema.index({ building: 1, unitNumber: 1 }, { unique: true });
 UnitSchema.index({ project: 1, status: 1 });
 UnitSchema.index({ project: 1, type: 1 });
-UnitSchema.index({ project: 1, bedrooms: 1, totalSize: 1 });
+UnitSchema.index({ project: 1, roomCount: 1, totalSize: 1 });
 UnitSchema.index({ 'price.amount': 1 });
 UnitSchema.index({
   descriptionEn: 'text',
