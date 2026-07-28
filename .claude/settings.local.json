@@ -27,7 +27,8 @@
       "Read(//tmp/**)",
       "Bash(python3 -c \"import json;d=json.load\\(open\\('messages/en.json'\\)\\);print\\(json.dumps\\({'landing':d.get\\('landing'\\)},ensure_ascii=False,indent=1\\)\\)\")",
       "Bash(python3 -c \"import json;d=json.load\\(open\\('messages/ka.json'\\)\\);print\\(json.dumps\\({'landing':d.get\\('landing'\\)},ensure_ascii=False,indent=1\\)\\)\")",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(python3 add_about_paragraphs.py)"
     ]
   }
 }
