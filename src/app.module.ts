@@ -13,6 +13,7 @@ import { PartnersModule } from './partners/partners.module';
 import { LandingPartnersModule } from './landing-partners/landing-partners.module';
 import { RoomModule } from './room/room.module';
 import { ContactsModule } from './contacts/contacts.module';
+import { ResumesModule } from './resumes/resumes.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { NewsModule } from './news/news.module';
@@ -47,6 +48,7 @@ import { Unit, UnitSchema } from './units/schemas/unit.schema';
     PartnersModule,
     LandingPartnersModule,
     ContactsModule,
+    ResumesModule,
     UserModule,
     AuthModule,
     NewsModule,

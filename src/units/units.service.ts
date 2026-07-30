@@ -18,7 +18,7 @@ import { CreateUnitDto } from './dto/create-unit.dto';
 import { QueryUnitDto } from './dto/query-unit.dto';
 import { StatusUpdateDto } from './dto/status-update.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
-import { UnitStatus } from './enums/unit.enums';
+import { UnitStatus, UnitType } from './enums/unit.enums';
 import { Unit, UnitDocument } from './schemas/unit.schema';
 
 @Injectable()
@@ -81,6 +81,13 @@ export class UnitsService {
     const { page = 1, limit = 20, sort } = query;
 
     const skip = (page - 1) * limit;
+
+    // Special ordering used by the public search page: living units (apartments)
+    // first, then commercial and every other unit type — kept stable across pages.
+    if (sort === 'typePriority') {
+      return this.findAllApartmentsFirst(filter, page, limit, skip);
+    }
+
     const sortBy = parseSort(sort) ?? { floorNumber: 1, unitNumber: 1 };
 
     const [data, total] = await Promise.all([
@@ -95,6 +102,65 @@ export class UnitsService {
         .exec(),
       this.unitModel.countDocuments(filter).exec(),
     ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1,
+    };
+  }
+
+  /**
+   * Paginate with living units (apartments) ordered before every other unit
+   * type, keeping the order stable across page boundaries. Runs the two tiers
+   * as separate `find()` queries so results stay Mongoose documents (correct
+   * `id` serialization via the schema `toJSON` transform).
+   */
+  private async findAllApartmentsFirst(
+    filter: FilterQuery<UnitDocument>,
+    page: number,
+    limit: number,
+    skip: number,
+  ): Promise<PaginatedResult<UnitDocument>> {
+    const secondarySort: Record<string, 1 | -1> = { floorNumber: 1, unitNumber: 1 };
+    const livingFilter: FilterQuery<UnitDocument> = { ...filter, type: UnitType.LIVING };
+    const restFilter: FilterQuery<UnitDocument> = { ...filter, type: { $ne: UnitType.LIVING } };
+
+    const findTier = (tier: FilterQuery<UnitDocument>, tierSkip: number, tierLimit: number) =>
+      this.unitModel
+        .find(tier)
+        .populate('project', 'nameEn nameKa')
+        .populate('building', 'nameEn nameKa block')
+        .populate('floor', 'floorNumber')
+        .sort(secondarySort)
+        .skip(tierSkip)
+        .limit(tierLimit)
+        .exec();
+
+    const [livingTotal, restTotal] = await Promise.all([
+      this.unitModel.countDocuments(livingFilter).exec(),
+      this.unitModel.countDocuments(restFilter).exec(),
+    ]);
+    const total = livingTotal + restTotal;
+
+    let data: UnitDocument[];
+    if (skip + limit <= livingTotal) {
+      // Window sits entirely inside the living (apartment) tier.
+      data = await findTier(livingFilter, skip, limit);
+    } else if (skip >= livingTotal) {
+      // Window sits entirely inside the non-living tier.
+      data = await findTier(restFilter, skip - livingTotal, limit);
+    } else {
+      // Window straddles the boundary: tail of the living tier + head of the rest.
+      const livingRemaining = livingTotal - skip;
+      const [livingPart, restPart] = await Promise.all([
+        findTier(livingFilter, skip, livingRemaining),
+        findTier(restFilter, 0, limit - livingRemaining),
+      ]);
+      data = [...livingPart, ...restPart];
+    }
 
     return {
       data,

@@ -28,7 +28,8 @@
       "Bash(python3 -c \"import json;d=json.load\\(open\\('messages/en.json'\\)\\);print\\(json.dumps\\({'landing':d.get\\('landing'\\)},ensure_ascii=False,indent=1\\)\\)\")",
       "Bash(python3 -c \"import json;d=json.load\\(open\\('messages/ka.json'\\)\\);print\\(json.dumps\\({'landing':d.get\\('landing'\\)},ensure_ascii=False,indent=1\\)\\)\")",
       "Bash(echo \"exit: $?\")",
-      "Bash(python3 add_about_paragraphs.py)"
+      "Bash(python3 add_about_paragraphs.py)",
+      "Bash(python3 -c \"import json;print\\('en:',json.load\\(open\\('messages/en.json'\\)\\)['about']['weAreHiring']\\);print\\('ka:',json.load\\(open\\('messages/ka.json'\\)\\)['about']['weAreHiring']\\);print\\('both JSON valid'\\)\")"
     ]
   }
 }
