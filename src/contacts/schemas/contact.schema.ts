@@ -16,8 +16,9 @@ import { ContactStatus } from '../enums/contact-status.enum';
   },
 })
 export class Contact {
-  @Prop({ required: true })
-  name: string;
+  // Name is optional — only the phone number is required.
+  @Prop()
+  name?: string;
 
   @Prop({ required: true })
   phone: string;

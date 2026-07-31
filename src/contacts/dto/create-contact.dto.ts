@@ -5,9 +5,10 @@ import { IsEmail, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { RequestBody } from '@/common/dto/request-body.dto';
 
 export class CreateContactDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 
   @ApiProperty()
   @IsString()
