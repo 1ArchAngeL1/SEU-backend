@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 
 import { PaginationDto, SortDto } from '@/common/dto/request-body.dto';
 import { PaginatedResult } from '@/common/interfaces/paginated-result.interface';
@@ -16,7 +16,20 @@ export class NewsService {
   ) {}
 
   async create(dto: CreateNewsDto): Promise<NewsDocument> {
+    if (dto.isMain) {
+      await this.clearMainFlag();
+    }
     return this.newsModel.create(dto);
+  }
+
+  /**
+   * Ensure at most one article is marked as the main banner article.
+   * Clears the flag on every article (optionally excluding one id).
+   */
+  private async clearMainFlag(exceptId?: string): Promise<void> {
+    const filter: FilterQuery<NewsDocument> = { isMain: true };
+    if (exceptId) filter._id = { $ne: new Types.ObjectId(exceptId) };
+    await this.newsModel.updateMany(filter, { isMain: false }).exec();
   }
 
   async findAll(
@@ -66,6 +79,10 @@ export class NewsService {
   }
 
   async update(id: string, dto: UpdateNewsDto): Promise<NewsDocument> {
+    if (dto.isMain) {
+      await this.clearMainFlag(id);
+    }
+
     const updated = await this.newsModel
       .findByIdAndUpdate(id, dto, { new: true, runValidators: true })
       .exec();

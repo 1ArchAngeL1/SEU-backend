@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 import { RequestBody } from '@/common/dto/request-body.dto';
 
@@ -36,6 +36,14 @@ export class CreateNewsDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @ApiPropertyOptional({
+    default: false,
+    description: 'Show this article as the wide main banner on the news page (only one can be main)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isMain?: boolean;
 }
 
 export class CreateNewsRequest extends RequestBody<CreateNewsDto> {

@@ -31,6 +31,11 @@ export class News {
 
   @Prop({ type: [String], default: [] })
   tags: string[];
+
+  // When true, this article is shown as the wide main banner on the news
+  // page. Only one article should carry this flag (enforced in the service).
+  @Prop({ default: false, index: true })
+  isMain: boolean;
 }
 
 export type NewsDocument = HydratedDocument<News>;
