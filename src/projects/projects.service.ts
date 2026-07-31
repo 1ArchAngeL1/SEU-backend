@@ -22,7 +22,20 @@ export class ProjectsService {
   ) {}
 
   async create(dto: CreateProjectDto): Promise<ProjectDocument> {
+    if (dto.isDefault) {
+      await this.clearDefaultFlag();
+    }
     return this.projectModel.create(dto);
+  }
+
+  /**
+   * Ensure at most one project is marked as the default search project.
+   * Clears the flag on every project (optionally excluding one id).
+   */
+  private async clearDefaultFlag(exceptId?: string): Promise<void> {
+    const filter: FilterQuery<ProjectDocument> = { isDefault: true };
+    if (exceptId) filter._id = { $ne: new Types.ObjectId(exceptId) };
+    await this.projectModel.updateMany(filter, { isDefault: false }).exec();
   }
 
   async findAll(
@@ -84,6 +97,10 @@ export class ProjectsService {
   }
 
   async update(id: string, dto: UpdateProjectDto): Promise<ProjectDocument> {
+    if (dto.isDefault) {
+      await this.clearDefaultFlag(id);
+    }
+
     const updated = await this.projectModel
       .findByIdAndUpdate(id, dto, { new: true, runValidators: true })
       .exec();

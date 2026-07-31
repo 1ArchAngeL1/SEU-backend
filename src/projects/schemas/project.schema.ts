@@ -116,6 +116,12 @@ export class Project {
   @Prop({ default: false, index: true })
   isFeatured: boolean;
 
+  // When true, this project is pre-selected by default in the apartment
+  // search page. Only one project should carry this flag (enforced in the
+  // service on create/update).
+  @Prop({ default: false, index: true })
+  isDefault: boolean;
+
   @Prop()
   googleMapLink?: string;
 

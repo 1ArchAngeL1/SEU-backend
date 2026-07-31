@@ -171,6 +171,14 @@ export class CreateProjectDto {
   @IsBoolean()
   isFeatured?: boolean;
 
+  @ApiPropertyOptional({
+    default: false,
+    description: 'Pre-select this project by default on the apartment search page (only one project can be default)',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
