@@ -312,24 +312,43 @@ export class UnitsService {
     if (query.type) filter.type = query.type;
     if (query.furnishingStatus) filter.furnishingStatus = query.furnishingStatus;
 
-    // Room / bedroom filtering. "Studio" is expressed as roomCount === 1 and
-    // may be combined with bedroom-count selections; the two are OR-ed so a
-    // mixed selection (e.g. studio + 2-bedroom) matches either.
-    const bedroomCond: FilterQuery<UnitDocument> = {};
-    if (typeof query.bedrooms === 'number') {
-      bedroomCond.bedrooms = query.bedrooms;
-    } else if (query.minBedrooms != null || query.maxBedrooms != null) {
-      bedroomCond.bedrooms = {};
-      if (query.minBedrooms != null) bedroomCond.bedrooms.$gte = query.minBedrooms;
-      if (query.maxBedrooms != null) bedroomCond.bedrooms.$lte = query.maxBedrooms;
+    // Room / bedroom filtering is derived from the actual `rooms` array — the
+    // scalar `bedrooms`/`roomCount` fields are stale for many imported units
+    // (0 even when the layout has bedrooms). A bedroom is a room of type
+    // 'bedroom'; a studio is a unit with a studio room and zero bedrooms.
+    // Selections are OR-ed so a mixed pick (e.g. studio + 2-bedroom) matches
+    // either.
+    const bedroomCount = {
+      $size: {
+        $filter: {
+          input: { $ifNull: ['$rooms', []] },
+          cond: { $eq: ['$$this.type', 'bedroom'] },
+        },
+      },
+    };
+    const roomConds: FilterQuery<UnitDocument>[] = [];
+    if (query.studio) {
+      roomConds.push({
+        'rooms.type': 'studio',
+        $expr: { $eq: [bedroomCount, 0] },
+      });
     }
-    const hasBedrooms = bedroomCond.bedrooms !== undefined;
-    if (typeof query.roomCount === 'number' && hasBedrooms) {
-      filter.$or = [{ roomCount: query.roomCount }, bedroomCond];
-    } else if (typeof query.roomCount === 'number') {
-      filter.roomCount = query.roomCount;
-    } else if (hasBedrooms) {
-      filter.bedrooms = bedroomCond.bedrooms;
+    if (typeof query.bedrooms === 'number') {
+      roomConds.push({ $expr: { $eq: [bedroomCount, query.bedrooms] } });
+    } else if (query.minBedrooms != null || query.maxBedrooms != null) {
+      const bounds: Record<string, unknown>[] = [];
+      if (query.minBedrooms != null)
+        bounds.push({ $gte: [bedroomCount, query.minBedrooms] });
+      if (query.maxBedrooms != null)
+        bounds.push({ $lte: [bedroomCount, query.maxBedrooms] });
+      roomConds.push({
+        $expr: bounds.length === 1 ? bounds[0] : { $and: bounds },
+      });
+    }
+    if (roomConds.length === 1) {
+      Object.assign(filter, roomConds[0]);
+    } else if (roomConds.length > 1) {
+      filter.$or = roomConds;
     }
 
     if (typeof query.floorNumber === 'number') {
