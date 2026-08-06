@@ -64,6 +64,13 @@ export class QueryUnitDto extends RequestBodyDto {
   @IsInt()
   maxBedrooms?: number;
 
+  @ApiPropertyOptional({ description: 'Exact total room count (studio = 1)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  roomCount?: number;
+
   @ApiPropertyOptional()
   @IsOptional()
   @Type(() => Number)

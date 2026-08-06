@@ -312,12 +312,24 @@ export class UnitsService {
     if (query.type) filter.type = query.type;
     if (query.furnishingStatus) filter.furnishingStatus = query.furnishingStatus;
 
+    // Room / bedroom filtering. "Studio" is expressed as roomCount === 1 and
+    // may be combined with bedroom-count selections; the two are OR-ed so a
+    // mixed selection (e.g. studio + 2-bedroom) matches either.
+    const bedroomCond: FilterQuery<UnitDocument> = {};
     if (typeof query.bedrooms === 'number') {
-      filter.bedrooms = query.bedrooms;
+      bedroomCond.bedrooms = query.bedrooms;
     } else if (query.minBedrooms != null || query.maxBedrooms != null) {
-      filter.bedrooms = {};
-      if (query.minBedrooms != null) filter.bedrooms.$gte = query.minBedrooms;
-      if (query.maxBedrooms != null) filter.bedrooms.$lte = query.maxBedrooms;
+      bedroomCond.bedrooms = {};
+      if (query.minBedrooms != null) bedroomCond.bedrooms.$gte = query.minBedrooms;
+      if (query.maxBedrooms != null) bedroomCond.bedrooms.$lte = query.maxBedrooms;
+    }
+    const hasBedrooms = bedroomCond.bedrooms !== undefined;
+    if (typeof query.roomCount === 'number' && hasBedrooms) {
+      filter.$or = [{ roomCount: query.roomCount }, bedroomCond];
+    } else if (typeof query.roomCount === 'number') {
+      filter.roomCount = query.roomCount;
+    } else if (hasBedrooms) {
+      filter.bedrooms = bedroomCond.bedrooms;
     }
 
     if (typeof query.floorNumber === 'number') {
