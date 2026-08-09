@@ -46,6 +46,12 @@ export class Partner {
 
   @Prop()
   discountPercentage?: number;
+
+  // Manual display order (ascending — lower shows first). Set via the admin
+  // reorder UI. Defaults to 0 so unordered records fall back to the secondary
+  // createdAt sort.
+  @Prop({ default: 0, index: true })
+  sortOrder: number;
 }
 
 export type PartnerDocument = HydratedDocument<Partner>;
