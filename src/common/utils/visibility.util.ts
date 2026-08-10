@@ -65,18 +65,22 @@ export function applyHiddenIds<T>(
     building: 'building',
   },
 ): FilterQuery<T> {
+  // `FilterQuery<T>` is generic and can't be indexed for writing with dynamic
+  // keys, so mutate through a loosely-typed alias and return the same object.
+  const f = filter as Record<string, any>;
+
   // The record's own switch.
-  filter.isActive = { $ne: false };
+  f.isActive = { $ne: false };
 
   const exclude = (key: string, ids: Types.ObjectId[]) => {
     if (!ids.length) return;
-    const existing = filter[key];
+    const existing = f[key];
     if (existing) {
       // An explicit `?project=…` / `?building=…` is already in the filter —
       // AND the exclusion in rather than overwrite it.
-      filter.$and = [...(filter.$and ?? []), { [key]: { $nin: ids } }];
+      f.$and = [...(f.$and ?? []), { [key]: { $nin: ids } }];
     } else {
-      filter[key] = { $nin: ids };
+      f[key] = { $nin: ids };
     }
   };
 

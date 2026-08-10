@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 
 import { RequestBody } from '@/common/dto/request-body.dto';
 
@@ -49,6 +49,12 @@ export class CreateNewsDto {
   @IsOptional()
   @IsBoolean()
   isMain?: boolean;
+
+  @ApiPropertyOptional({ description: 'Manual display order (ascending, lower shows first)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sortOrder?: number;
 }
 
 export class CreateNewsRequest extends RequestBody<CreateNewsDto> {

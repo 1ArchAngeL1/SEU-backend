@@ -40,6 +40,12 @@ export class News {
   // page. Only one article should carry this flag (enforced in the service).
   @Prop({ default: false, index: true })
   isMain: boolean;
+
+  // Manual display order (ascending — lower shows first). Set via the admin
+  // reorder UI. Defaults to 0 so unordered records fall back to the secondary
+  // createdAt sort.
+  @Prop({ default: 0, index: true })
+  sortOrder: number;
 }
 
 export type NewsDocument = HydratedDocument<News>;
