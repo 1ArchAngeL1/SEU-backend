@@ -65,17 +65,42 @@ export class FloorsService {
     return this.floorModel.find(filter).sort({ floorNumber: 1 }).exec();
   }
 
-  async findByBuilding(buildingId: string): Promise<FloorDocument[]> {
+  async findByBuilding(buildingId: string, visibleOnly = false): Promise<FloorDocument[]> {
+    // Floors have no Active switch of their own — they inherit their block's,
+    // and the block inherits its project's.
+    if (visibleOnly && !(await this.isBuildingVisible(buildingId))) return [];
+
     return this.floorModel
       .find({ building: new Types.ObjectId(buildingId) })
       .sort({ floorNumber: 1 })
       .exec();
   }
 
-  async findOne(id: string): Promise<FloorDocument> {
+  async findOne(id: string, visibleOnly = false): Promise<FloorDocument> {
     const floor = await this.floorModel.findById(id).exec();
     if (!floor) throw new NotFoundException(`Floor '${id}' not found`);
+
+    if (visibleOnly && !(await this.isBuildingVisible(floor.building.toString()))) {
+      throw new NotFoundException(`Floor '${id}' not found`);
+    }
     return floor;
+  }
+
+  /** True when the block and its project are both left active by the admin. */
+  private async isBuildingVisible(buildingId: string): Promise<boolean> {
+    const building = await this.buildingModel
+      .findById(buildingId)
+      .select('isActive project')
+      .lean()
+      .exec();
+    if (!building || building.isActive === false) return false;
+
+    const project = await this.projectModel
+      .findById(building.project)
+      .select('isActive')
+      .lean()
+      .exec();
+    return project?.isActive !== false;
   }
 
   async findByBuildingAndNumber(

@@ -13,6 +13,7 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Public } from '@/auth/decorators/public.decorator';
+import { VisibleOnlyDto } from '@/common/dto/visible-only.dto';
 import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe';
 import { BuildingsService } from './buildings.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
@@ -40,15 +41,21 @@ export class BuildingsController {
   @Public()
   @Get('by-project/:projectId')
   @ApiOperation({ summary: 'List all buildings within a project' })
-  findByProject(@Param('projectId', ParseObjectIdPipe) projectId: string) {
-    return this.buildingsService.findByProject(projectId);
+  findByProject(
+    @Param('projectId', ParseObjectIdPipe) projectId: string,
+    @Query() query: VisibleOnlyDto,
+  ) {
+    return this.buildingsService.findByProject(projectId, query.visibleOnly);
   }
 
   @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get a single building by id' })
-  findOne(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.buildingsService.findOne(id);
+  findOne(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Query() query: VisibleOnlyDto,
+  ) {
+    return this.buildingsService.findOne(id, query.visibleOnly);
   }
 
   @Patch(':id')

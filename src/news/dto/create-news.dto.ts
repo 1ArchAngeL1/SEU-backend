@@ -31,6 +31,11 @@ export class CreateNewsDto {
   @IsString({ each: true })
   image?: string[];
 
+  @ApiPropertyOptional({ description: 'Article video — file id or URL' })
+  @IsOptional()
+  @IsString()
+  video?: string;
+
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()

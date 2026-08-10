@@ -11,6 +11,7 @@ import { Building, BuildingDocument } from '../buildings/schemas/building.schema
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { parseRawPolygon } from '../common/utils/polygon.util';
 import { parseSort } from '../common/utils/sort.util';
+import { applyHiddenIds, findHiddenIds } from '../common/utils/visibility.util';
 import { FloorsService } from '../floors/floors.service';
 import { Project, ProjectDocument } from '../projects/schemas/project.schema';
 import { RoomDto } from '../room/dto/room.dto';
@@ -77,7 +78,7 @@ export class UnitsService {
   }
 
   async findAll(query: QueryUnitDto): Promise<PaginatedResult<UnitDocument>> {
-    const filter = this.buildFilter(query);
+    const filter = await this.buildVisibleFilter(query);
     const { page = 1, limit = 20, sort } = query;
 
     const skip = (page - 1) * limit;
@@ -93,8 +94,8 @@ export class UnitsService {
     const [data, total] = await Promise.all([
       this.unitModel
         .find(filter)
-        .populate('project', 'nameEn nameKa')
-        .populate('building', 'nameEn nameKa block')
+        .populate('project', 'nameEn nameKa isActive')
+        .populate('building', 'nameEn nameKa block isActive')
         .populate('floor', 'floorNumber')
         .sort(sortBy)
         .skip(skip)
@@ -131,8 +132,8 @@ export class UnitsService {
     const findTier = (tier: FilterQuery<UnitDocument>, tierSkip: number, tierLimit: number) =>
       this.unitModel
         .find(tier)
-        .populate('project', 'nameEn nameKa')
-        .populate('building', 'nameEn nameKa block')
+        .populate('project', 'nameEn nameKa isActive')
+        .populate('building', 'nameEn nameKa block isActive')
         .populate('floor', 'floorNumber')
         .sort(secondarySort)
         .skip(tierSkip)
@@ -171,15 +172,32 @@ export class UnitsService {
     };
   }
 
-  async findOne(id: string): Promise<UnitDocument> {
+  async findOne(id: string, visibleOnly = false): Promise<UnitDocument> {
     const unit = await this.unitModel
       .findById(id)
-      .populate('project', 'nameEn nameKa')
-      .populate('building', 'nameEn nameKa block')
+      .populate('project', 'nameEn nameKa isActive')
+      .populate('building', 'nameEn nameKa block isActive')
       .populate('floor', 'floorNumber')
       .exec();
     if (!unit) throw new NotFoundException(`Unit '${id}' not found`);
+
+    // Public deep link: a unit switched off itself, or sitting in a switched-off
+    // block or project, must read as missing rather than render.
+    if (visibleOnly && !(await this.isPubliclyVisible(unit))) {
+      throw new NotFoundException(`Unit '${id}' not found`);
+    }
     return unit;
+  }
+
+  /** The project → block → unit cascade, for a single already-loaded unit. */
+  private async isPubliclyVisible(unit: UnitDocument): Promise<boolean> {
+    if (unit.isActive === false) return false;
+
+    const [building, project] = await Promise.all([
+      this.buildingModel.findById(unit.building).select('isActive').lean().exec(),
+      this.projectModel.findById(unit.project).select('isActive').lean().exec(),
+    ]);
+    return building?.isActive !== false && project?.isActive !== false;
   }
 
   async update(id: string, dto: UpdateUnitDto): Promise<UnitDocument> {
@@ -209,8 +227,8 @@ export class UnitsService {
 
     const updated = await this.unitModel
       .findByIdAndUpdate(id, payload, { new: true, runValidators: true })
-      .populate('project', 'nameEn nameKa')
-      .populate('building', 'nameEn nameKa block')
+      .populate('project', 'nameEn nameKa isActive')
+      .populate('building', 'nameEn nameKa block isActive')
       .exec();
 
     if (dto.status && dto.status !== existing.status) {
@@ -236,8 +254,8 @@ export class UnitsService {
 
     const updated = await this.unitModel
       .findByIdAndUpdate(id, update, { new: true, runValidators: true })
-      .populate('project', 'nameEn nameKa')
-      .populate('building', 'nameEn nameKa block')
+      .populate('project', 'nameEn nameKa isActive')
+      .populate('building', 'nameEn nameKa block isActive')
       .exec();
 
     if (!updated) throw new NotFoundException(`Unit '${id}' not found`);
@@ -300,6 +318,19 @@ export class UnitsService {
       byType: Object.fromEntries(byType.map((x) => [x._id, x.count])),
       pricing: priceStats[0] ?? null,
     };
+  }
+
+  /**
+   * `buildFilter` plus the public-site cascade when `visibleOnly` is set: a
+   * unit is public only when the unit, its block and its project are all
+   * active. Admin requests omit the flag and keep seeing everything.
+   */
+  private async buildVisibleFilter(query: QueryUnitDto): Promise<FilterQuery<UnitDocument>> {
+    const filter = this.buildFilter(query);
+    if (!query.visibleOnly) return filter;
+
+    const hidden = await findHiddenIds(this.projectModel, this.buildingModel);
+    return applyHiddenIds(filter, hidden);
   }
 
   private buildFilter(query: QueryUnitDto): FilterQuery<UnitDocument> {

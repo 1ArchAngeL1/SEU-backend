@@ -64,7 +64,7 @@ export class ApartmentTypesService {
     const [data, total] = await Promise.all([
       this.apartmentTypeModel
         .find(query)
-        .populate('project', 'nameEn nameKa')
+        .populate('project', 'nameEn nameKa isActive')
         .sort(sortBy)
         .skip(skip)
         .limit(limit)
@@ -91,7 +91,7 @@ export class ApartmentTypesService {
   async findOne(id: string): Promise<ApartmentTypeDocument> {
     const apartmentType = await this.apartmentTypeModel
       .findById(id)
-      .populate('project', 'nameEn nameKa')
+      .populate('project', 'nameEn nameKa isActive')
       .exec();
     if (!apartmentType) {
       throw new NotFoundException(`ApartmentType '${id}' not found`);
@@ -123,7 +123,7 @@ export class ApartmentTypesService {
 
     const updated = await this.apartmentTypeModel
       .findByIdAndUpdate(id, dto, { new: true, runValidators: true })
-      .populate('project', 'nameEn nameKa')
+      .populate('project', 'nameEn nameKa isActive')
       .exec();
 
     return updated!;

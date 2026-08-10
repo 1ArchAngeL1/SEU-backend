@@ -1,6 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 import { RequestBody } from '@/common/dto/request-body.dto';
 
@@ -34,6 +41,14 @@ export class CreateLandingPartnerDto {
   @IsOptional()
   @IsString()
   descriptionKa?: string;
+
+  @ApiPropertyOptional({
+    description: 'Manual display order (ascending; lower shows first).',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sortOrder?: number;
 }
 
 export class CreateLandingPartnerRequest extends RequestBody<CreateLandingPartnerDto> {

@@ -14,6 +14,7 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Public } from '@/auth/decorators/public.decorator';
+import { VisibleOnlyDto } from '@/common/dto/visible-only.dto';
 import { ParseObjectIdPipe } from '@/common/pipes/parse-object-id.pipe';
 import { SyncRoomsDto } from '@/room/dto/room.dto';
 import { CreateUnitDto } from './dto/create-unit.dto';
@@ -50,8 +51,11 @@ export class UnitsController {
   @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get a single unit by id' })
-  findOne(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.unitsService.findOne(id);
+  findOne(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Query() query: VisibleOnlyDto,
+  ) {
+    return this.unitsService.findOne(id, query.visibleOnly);
   }
 
   @Public()

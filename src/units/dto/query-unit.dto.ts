@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 
 import { RequestBodyDto } from '../../common/dto/request-body.dto';
+import { ToBoolean } from '../../common/dto/to-boolean';
 import { FurnishingStatus, UnitStatus, UnitType } from '../enums/unit.enums';
 
 export class QueryUnitDto extends RequestBodyDto {
@@ -68,7 +69,7 @@ export class QueryUnitDto extends RequestBodyDto {
     description: 'Studio apartments — a studio room with zero bedrooms',
   })
   @IsOptional()
-  @Type(() => Boolean)
+  @ToBoolean()
   @IsBoolean()
   studio?: boolean;
 
@@ -120,7 +121,17 @@ export class QueryUnitDto extends RequestBodyDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @Type(() => Boolean)
+  @ToBoolean()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Public site: return only units the admin has left active, in an active ' +
+      'block, in an active project. Admin screens omit this and see everything.',
+  })
+  @IsOptional()
+  @ToBoolean()
+  @IsBoolean()
+  visibleOnly?: boolean;
 }

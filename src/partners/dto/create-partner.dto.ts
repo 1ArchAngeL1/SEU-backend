@@ -61,6 +61,14 @@ export class CreatePartnerDto {
   @Min(0)
   @Max(100)
   discountPercentage?: number;
+
+  @ApiPropertyOptional({
+    description: 'Manual display order (ascending; lower shows first).',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sortOrder?: number;
 }
 
 export class CreatePartnerRequest extends RequestBody<CreatePartnerDto> {

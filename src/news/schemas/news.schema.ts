@@ -29,6 +29,10 @@ export class News {
   @Prop({ type: [String], default: [] })
   image: string[];
 
+  // Optional article video — a file-service id (or external URL).
+  @Prop({ trim: true })
+  video?: string;
+
   @Prop({ type: [String], default: [] })
   tags: string[];
 

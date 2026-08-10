@@ -14,6 +14,7 @@ import { Project, ProjectDocument } from '@/projects/schemas/project.schema';
 import { Unit, UnitDocument } from '@/units/schemas/unit.schema';
 import { UnitStatus } from '@/units/enums/unit.enums';
 import { parseRawPolygon } from '@/common/utils/polygon.util';
+import { applyHiddenIds, findHiddenIds } from '@/common/utils/visibility.util';
 import { CreateBuildingDto } from './dto/create-building.dto';
 import { QueryBuildingDto } from './dto/query-building.dto';
 import { UpdateBuildingDto } from './dto/update-building.dto';
@@ -60,13 +61,22 @@ export class BuildingsService {
     if (typeof isActive === 'boolean') filter.isActive = isActive;
     if (q) filter.$text = { $search: q };
 
+    if (query.visibleOnly) {
+      const hidden = await findHiddenIds(this.projectModel, this.buildingModel);
+      // Buildings have no `building` parent — only the project cascade applies,
+      // and `_id` carries the blocks hidden by their own switch.
+      applyHiddenIds(filter, { projects: hidden.projects, buildings: [] }, {
+        project: 'project',
+      });
+    }
+
     const skip = (page - 1) * limit;
     const sortBy = parseSort(sort) ?? { block: 1 };
 
     const [data, total] = await Promise.all([
       this.buildingModel
         .find(filter)
-        .populate('project', 'nameEn nameKa')
+        .populate('project', 'nameEn nameKa isActive')
         .sort(sortBy)
         .skip(skip)
         .limit(limit)
@@ -83,17 +93,35 @@ export class BuildingsService {
     };
   }
 
-  async findOne(id: string): Promise<BuildingDocument> {
-    const building = await this.buildingModel.findById(id).populate('project', 'nameEn nameKa').exec();
+  async findOne(id: string, visibleOnly = false): Promise<BuildingDocument> {
+    const building = await this.buildingModel.findById(id).populate('project', 'nameEn nameKa isActive').exec();
     if (!building) throw new NotFoundException(`Building '${id}' not found`);
+
+    // Public deep link: a deactivated block — or one in a deactivated project —
+    // reads as missing.
+    if (visibleOnly) {
+      const project = building.project as unknown as { isActive?: boolean } | null;
+      if (building.isActive === false || project?.isActive === false) {
+        throw new NotFoundException(`Building '${id}' not found`);
+      }
+    }
     return building;
   }
 
-  async findByProject(projectId: string): Promise<BuildingDocument[]> {
-    return this.buildingModel
-      .find({ project: new Types.ObjectId(projectId) })
-      .sort({ block: 1 })
-      .exec();
+  async findByProject(projectId: string, visibleOnly = false): Promise<BuildingDocument[]> {
+    const filter: FilterQuery<BuildingDocument> = {
+      project: new Types.ObjectId(projectId),
+    };
+
+    if (visibleOnly) {
+      // A block is public only when it and its project are both active — a
+      // deactivated project takes all of its blocks with it.
+      const project = await this.projectModel.findById(projectId).select('isActive').lean().exec();
+      if (project?.isActive === false) return [];
+      filter.isActive = { $ne: false };
+    }
+
+    return this.buildingModel.find(filter).sort({ block: 1 }).exec();
   }
 
   async update(id: string, dto: UpdateBuildingDto): Promise<BuildingDocument> {
@@ -116,7 +144,7 @@ export class BuildingsService {
     const payload = this.resolvePolygon(dto);
     const updated = await this.buildingModel
       .findByIdAndUpdate(id, payload, { new: true, runValidators: true })
-      .populate('project', 'nameEn nameKa')
+      .populate('project', 'nameEn nameKa isActive')
       .exec();
 
     return updated!;
