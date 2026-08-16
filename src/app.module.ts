@@ -17,6 +17,7 @@ import { ResumesModule } from './resumes/resumes.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { NewsModule } from './news/news.module';
+import { MailModule } from './mail/mail.module';
 import { LegacyIndexCleanupService } from './common/services/legacy-index-cleanup.service';
 import { Project, ProjectSchema } from './projects/schemas/project.schema';
 import { Building, BuildingSchema } from './buildings/schemas/building.schema';
@@ -34,6 +35,7 @@ import { Unit, UnitSchema } from './units/schemas/unit.schema';
         uri: config.get<string>('MONGODB_URI', 'mongodb://localhost:27017/seu'),
       }),
     }),
+    MailModule,
     MongooseModule.forFeature([
       { name: Project.name, schema: ProjectSchema },
       { name: Building.name, schema: BuildingSchema },
