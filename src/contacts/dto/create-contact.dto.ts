@@ -1,6 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEmail, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsEmail,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 import { RequestBody } from '@/common/dto/request-body.dto';
 
@@ -18,6 +24,13 @@ export class CreateContactDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @ApiPropertyOptional({
+    description: 'Unit the request was sent from, when submitted from an apartment page',
+  })
+  @IsOptional()
+  @IsMongoId()
+  unit?: string;
 }
 
 export class CreateContactRequest extends RequestBody<CreateContactDto> {

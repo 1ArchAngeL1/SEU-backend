@@ -9,6 +9,17 @@ import { ContactFilterDto } from './dto/search-contacts.dto';
 import { UpdateContactStatusDto } from './dto/update-contact-status.dto';
 import { Contact, ContactDocument } from './schemas/contact.schema';
 
+/**
+ * Requests sent from an apartment page carry the unit they came from — the
+ * admin panel lists it, so reads hand back enough of the unit (and its project
+ * name) to label the row without a second round trip.
+ */
+const UNIT_POPULATE = {
+  path: 'unit',
+  select: 'unitNumber block floorNumber building project',
+  populate: [{ path: 'project', select: 'nameEn nameKa' }],
+};
+
 @Injectable()
 export class ContactsService {
   constructor(
@@ -49,7 +60,13 @@ export class ContactsService {
         : { createdAt: -1 as -1 };
 
     const [data, total] = await Promise.all([
-      this.contactModel.find(query).sort(sortBy).skip(skip).limit(limit).exec(),
+      this.contactModel
+        .find(query)
+        .sort(sortBy)
+        .skip(skip)
+        .limit(limit)
+        .populate(UNIT_POPULATE)
+        .exec(),
       this.contactModel.countDocuments(query).exec(),
     ]);
 
@@ -63,7 +80,10 @@ export class ContactsService {
   }
 
   async findOne(id: string): Promise<ContactDocument> {
-    const contact = await this.contactModel.findById(id).exec();
+    const contact = await this.contactModel
+      .findById(id)
+      .populate(UNIT_POPULATE)
+      .exec();
     if (!contact) throw new NotFoundException(`Contact '${id}' not found`);
     return contact;
   }
@@ -71,6 +91,7 @@ export class ContactsService {
   async updateStatus(id: string, dto: UpdateContactStatusDto): Promise<ContactDocument> {
     const updated = await this.contactModel
       .findByIdAndUpdate(id, { status: dto.status }, { new: true, runValidators: true })
+      .populate(UNIT_POPULATE)
       .exec();
     if (!updated) throw new NotFoundException(`Contact '${id}' not found`);
     return updated;

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
 import { ContactStatus } from '../enums/contact-status.enum';
 
@@ -28,6 +28,16 @@ export class Contact {
 
   @Prop({ type: String, enum: ContactStatus, default: ContactStatus.OPEN })
   status: ContactStatus;
+
+  // Set only when the request was sent from an apartment page, so the admin
+  // panel can show which unit the visitor asked about. Absent on the generic
+  // contact / landing forms.
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Unit',
+    index: true,
+  })
+  unit?: Types.ObjectId;
 }
 
 export type ContactDocument = HydratedDocument<Contact>;
