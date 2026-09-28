@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
 
 export interface MailPayload {
-  /** Recipients. Falls back to MAIL_TO when omitted. */
+  /** Recipients — a comma-separated env string or a ready-made list. */
   to?: string | string[];
   subject: string;
   html: string;
@@ -26,23 +26,23 @@ export class MailService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MailService.name);
   private readonly transporter: Transporter | null = null;
   private readonly from: string;
-  private readonly defaultTo: string[];
 
   constructor(private readonly config: ConfigService) {
     const host = this.config.get<string>('SMTP_HOST')?.trim();
     const user = this.config.get<string>('SMTP_USER')?.trim();
-    const pass = this.config.get<string>('SMTP_PASSWORD')?.trim();
+    // SMTP_PASS is the documented name; SMTP_PASSWORD is the older spelling a
+    // deployed .env may still carry. Accept both — a mismatch here authenticates
+    // with an undefined password, which Gmail answers with a bare 535.
+    const pass =
+      this.config.get<string>('SMTP_PASS')?.trim() ||
+      this.config.get<string>('SMTP_PASSWORD')?.trim();
     const port = Number(this.config.get<string>('SMTP_PORT') ?? 587);
     // Port 465 is implicit TLS; 587/25 start plain and upgrade with STARTTLS.
     const secure =
       String(this.config.get<string>('SMTP_SECURE') ?? '').toLowerCase() === 'true' ||
       port === 465;
 
-    this.from =
-      this.config.get<string>('MAIL_FROM')?.trim() ||
-      user ||
-      'no-reply@seudevelopment.ge';
-    this.defaultTo = splitAddresses(this.config.get<string>('MAIL_TO'));
+    this.from = buildSender(this.config.get<string>('MAIL_FROM'), user);
 
     if (!host) {
       this.logger.warn(
@@ -83,7 +83,7 @@ export class MailService implements OnModuleInit, OnModuleDestroy {
    * fail, so a mail outage never breaks the request that triggered it.
    */
   async send(payload: MailPayload): Promise<boolean> {
-    const to = payload.to ? splitAddresses(payload.to) : this.defaultTo;
+    const to = splitAddresses(payload.to);
 
     if (!this.transporter) {
       this.logger.warn(`Mail disabled, dropping "${payload.subject}"`);
@@ -91,7 +91,7 @@ export class MailService implements OnModuleInit, OnModuleDestroy {
     }
     if (!to.length) {
       this.logger.warn(
-        `No recipient configured (MAIL_TO), dropping "${payload.subject}"`,
+        `No recipient configured (CONTACT_NOTIFY_TO), dropping "${payload.subject}"`,
       );
       return false;
     }
@@ -116,6 +116,18 @@ export class MailService implements OnModuleInit, OnModuleDestroy {
       return false;
     }
   }
+}
+
+/**
+ * MAIL_FROM is usually just a display name ("SEU Development"), which is not a
+ * valid sender on its own — pair it with the authenticated mailbox. An address
+ * or a full `Name <addr>` value is used as written.
+ */
+function buildSender(mailFrom: string | undefined, user?: string): string {
+  const from = mailFrom?.trim().replace(/^"|"$/g, '');
+  if (!from) return user || 'no-reply@seudevelopment.ge';
+  if (from.includes('@')) return from;
+  return user ? `"${from}" <${user}>` : from;
 }
 
 /** Accepts a comma/semicolon separated env string or a ready-made list. */

@@ -59,8 +59,13 @@ export class ContactsService {
       });
 
       await this.mail.send({
-        // Falls back to MAIL_TO inside the mail service when unset.
-        to: this.config.get<string>('CONTACT_NOTIFICATION_TO')?.trim(),
+        // CONTACT_NOTIFY_TO is the documented name; the other two are older
+        // spellings a deployed .env may still carry. Without a match the mail
+        // has no recipient and is dropped with only a log line to show for it.
+        to:
+          this.config.get<string>('CONTACT_NOTIFY_TO')?.trim() ||
+          this.config.get<string>('CONTACT_NOTIFICATION_TO')?.trim() ||
+          this.config.get<string>('MAIL_TO')?.trim(),
         ...mail,
       });
     } catch (err) {
