@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { PaginationDto, SortDto } from '@/common/dto/request-body.dto';
 import { PaginatedResult } from '@/common/interfaces/paginated-result.interface';
+import { MailService } from '@/mail/mail.service';
+import { renderContactNotification } from './contact-notification.template';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { ContactFilterDto } from './dto/search-contacts.dto';
 import { UpdateContactStatusDto } from './dto/update-contact-status.dto';
@@ -22,12 +25,49 @@ const UNIT_POPULATE = {
 
 @Injectable()
 export class ContactsService {
+  private readonly logger = new Logger(ContactsService.name);
+
   constructor(
     @InjectModel(Contact.name) private readonly contactModel: Model<ContactDocument>,
+    private readonly mail: MailService,
+    private readonly config: ConfigService,
   ) {}
 
   async create(dto: CreateContactDto): Promise<ContactDocument> {
-    return this.contactModel.create(dto);
+    const contact = await this.contactModel.create(dto);
+    // The notification labels the apartment exactly like the admin list does,
+    // which needs the unit and its project name.
+    await contact.populate(UNIT_POPULATE);
+
+    // Fire-and-forget: the request is already stored, and a mail server that is
+    // slow or down must not fail — or hold up — the visitor's submission.
+    void this.notifyNewContact(contact);
+
+    return contact;
+  }
+
+  /** Emails the sales inbox that someone left their number. Never throws. */
+  private async notifyNewContact(contact: ContactDocument): Promise<void> {
+    try {
+      const siteUrl = this.config.get<string>('PUBLIC_SITE_URL')?.trim();
+      const mail = renderContactNotification(contact, {
+        siteUrl,
+        adminUrl:
+          this.config.get<string>('ADMIN_CONTACTS_URL')?.trim() ||
+          (siteUrl ? `${siteUrl.replace(/\/+$/, '')}/en/admin/contacts` : undefined),
+        timeZone: this.config.get<string>('MAIL_TIMEZONE')?.trim(),
+      });
+
+      await this.mail.send({
+        // Falls back to MAIL_TO inside the mail service when unset.
+        to: this.config.get<string>('CONTACT_NOTIFICATION_TO')?.trim(),
+        ...mail,
+      });
+    } catch (err) {
+      this.logger.error(
+        `Contact notification failed for '${contact.id}': ${(err as Error).message}`,
+      );
+    }
   }
 
   async findAll(

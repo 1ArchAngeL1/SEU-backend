@@ -29,7 +29,12 @@
       "Bash(python3 -c \"import json;d=json.load\\(open\\('messages/ka.json'\\)\\);print\\(json.dumps\\({'landing':d.get\\('landing'\\)},ensure_ascii=False,indent=1\\)\\)\")",
       "Bash(echo \"exit: $?\")",
       "Bash(python3 add_about_paragraphs.py)",
-      "Bash(python3 -c \"import json;print\\('en:',json.load\\(open\\('messages/en.json'\\)\\)['about']['weAreHiring']\\);print\\('ka:',json.load\\(open\\('messages/ka.json'\\)\\)['about']['weAreHiring']\\);print\\('both JSON valid'\\)\")"
+      "Bash(python3 -c \"import json;print\\('en:',json.load\\(open\\('messages/en.json'\\)\\)['about']['weAreHiring']\\);print\\('ka:',json.load\\(open\\('messages/ka.json'\\)\\)['about']['weAreHiring']\\);print\\('both JSON valid'\\)\")",
+      "Bash(npm -v)",
+      "Bash(npm view *)",
+      "Bash(python3 -c \"import json,sys; v=json.load\\(sys.stdin\\); print\\('8.x latest:', [x for x in v if x.startswith\\('8.'\\)][-1]\\); print\\('9.x:', [x for x in v if x.startswith\\('9.'\\)]\\)\")",
+      "Bash(npm pack *)",
+      "Bash(tar -tzf nodemailer-9.1.0.tgz)"
     ]
   }
 }
