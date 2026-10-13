@@ -22,6 +22,73 @@ import { UpdateUnitDto } from './dto/update-unit.dto';
 import { UnitStatus, UnitType } from './enums/unit.enums';
 import { Unit, UnitDocument } from './schemas/unit.schema';
 
+/**
+ * The number of bedrooms a unit really has, as an aggregation expression.
+ *
+ * It must agree with `bedroomCount()` on the site (`src/lib/room-counts.ts`),
+ * which is what prints the figure on the card and the detail page: rooms win
+ * whenever the unit has any, and the stale imported `bedrooms` scalar is used
+ * only for the units whose `rooms` array is empty — for those it is the sole
+ * surviving record of the layout. Counting rooms alone made every one of them
+ * read as 0 bedrooms, so a unit the site labels "2 bedrooms" was missing from
+ * the 2-bedroom results.
+ *
+ * `rooms` is null-filtered first: the import left null entries behind in some
+ * arrays, and `[null]` is not a layout — it has to fall back like an empty one.
+ */
+const BEDROOM_COUNT = {
+  $let: {
+    vars: {
+      roomsArr: {
+        $filter: {
+          input: { $ifNull: ['$rooms', []] },
+          as: 'r',
+          cond: { $eq: [{ $type: '$$r' }, 'object'] },
+        },
+      },
+    },
+    in: {
+      $cond: [
+        { $gt: [{ $size: '$$roomsArr' }, 0] },
+        {
+          $size: {
+            $filter: {
+              input: '$$roomsArr',
+              as: 'r',
+              cond: { $eq: ['$$r.type', 'bedroom'] },
+            },
+          },
+        },
+        // Not a number on every legacy document, so coerce and default.
+        { $convert: { input: '$bedrooms', to: 'int', onError: 0, onNull: 0 } },
+      ],
+    },
+  },
+};
+
+/**
+ * AND a condition on `type` into a filter that may already carry one.
+ *
+ * Assigning `filter.type` directly would silently replace an existing
+ * condition — which is how the apartments-first pagination used to drop an
+ * explicit `?type=parking` and answer with apartments instead. Mutates and
+ * returns the same object, mirroring `applyHiddenIds`.
+ */
+function narrowType(
+  filter: FilterQuery<UnitDocument>,
+  cond: unknown,
+): FilterQuery<UnitDocument> {
+  const f = filter as Record<string, any>;
+  if (f.type === undefined) {
+    f.type = cond;
+    return filter;
+  }
+  const existing = f.type;
+  delete f.type;
+  f.$and = [...(f.$and ?? []), { type: existing }, { type: cond }];
+  return filter;
+}
+
 @Injectable()
 export class UnitsService {
   constructor(
@@ -126,8 +193,11 @@ export class UnitsService {
     skip: number,
   ): Promise<PaginatedResult<UnitDocument>> {
     const secondarySort: Record<string, 1 | -1> = { floorNumber: 1, unitNumber: 1 };
-    const livingFilter: FilterQuery<UnitDocument> = { ...filter, type: UnitType.LIVING };
-    const restFilter: FilterQuery<UnitDocument> = { ...filter, type: { $ne: UnitType.LIVING } };
+    // The tier condition is ANDed in, never assigned: the caller's own `type` /
+    // `types` filter has to survive the split, otherwise `?type=parking` comes
+    // back as apartments. A tier that contradicts it simply matches nothing.
+    const livingFilter = narrowType({ ...filter }, UnitType.LIVING);
+    const restFilter = narrowType({ ...filter }, { $ne: UnitType.LIVING });
 
     const findTier = (tier: FilterQuery<UnitDocument>, tierSkip: number, tierLimit: number) =>
       this.unitModel
@@ -340,38 +410,40 @@ export class UnitsService {
     if (query.building) filter.building = new Types.ObjectId(query.building);
     if (query.block) filter.block = query.block.toUpperCase();
     if (query.status) filter.status = query.status;
-    if (query.type) filter.type = query.type;
     if (query.furnishingStatus) filter.furnishingStatus = query.furnishingStatus;
 
-    // Room / bedroom filtering is derived from the actual `rooms` array — the
-    // scalar `bedrooms`/`roomCount` fields are stale for many imported units
-    // (0 even when the layout has bedrooms). A bedroom is a room of type
-    // 'bedroom'; a studio is a unit with a studio room and zero bedrooms.
-    // Selections are OR-ed so a mixed pick (e.g. studio + 2-bedroom) matches
-    // either.
-    const bedroomCount = {
-      $size: {
-        $filter: {
-          input: { $ifNull: ['$rooms', []] },
-          cond: { $eq: ['$$this.type', 'bedroom'] },
-        },
-      },
-    };
+    // `type` (one) and `types` (a set) are independent filters and are ANDed,
+    // so a caller passing both gets the intersection rather than whichever the
+    // code happened to assign last.
+    if (query.type) narrowType(filter, query.type);
+    if (query.types?.length) narrowType(filter, { $in: query.types });
+
+    // Room / bedroom filtering counts the actual `rooms` array; the stale
+    // scalar is the fallback for units that have no rooms at all. See
+    // BEDROOM_COUNT — the filter has to agree with what the site prints on the
+    // card, or a unit labelled "2 bedrooms" is missing from the 2-bedroom
+    // results. A bedroom is a room of type 'bedroom'; a studio is a unit with
+    // a studio room and zero bedrooms. Selections are OR-ed so a mixed pick
+    // (e.g. studio + 2-bedroom) matches either.
     const roomConds: FilterQuery<UnitDocument>[] = [];
     if (query.studio) {
       roomConds.push({
         'rooms.type': 'studio',
-        $expr: { $eq: [bedroomCount, 0] },
+        $expr: { $eq: [BEDROOM_COUNT, 0] },
       });
     }
-    if (typeof query.bedrooms === 'number') {
-      roomConds.push({ $expr: { $eq: [bedroomCount, query.bedrooms] } });
+    // An exact set wins over the range: `bedroomCounts=1,4` must not quietly
+    // become "1 through 4".
+    if (query.bedroomCounts?.length) {
+      roomConds.push({ $expr: { $in: [BEDROOM_COUNT, query.bedroomCounts] } });
+    } else if (typeof query.bedrooms === 'number') {
+      roomConds.push({ $expr: { $eq: [BEDROOM_COUNT, query.bedrooms] } });
     } else if (query.minBedrooms != null || query.maxBedrooms != null) {
       const bounds: Record<string, unknown>[] = [];
       if (query.minBedrooms != null)
-        bounds.push({ $gte: [bedroomCount, query.minBedrooms] });
+        bounds.push({ $gte: [BEDROOM_COUNT, query.minBedrooms] });
       if (query.maxBedrooms != null)
-        bounds.push({ $lte: [bedroomCount, query.maxBedrooms] });
+        bounds.push({ $lte: [BEDROOM_COUNT, query.maxBedrooms] });
       roomConds.push({
         $expr: bounds.length === 1 ? bounds[0] : { $and: bounds },
       });
@@ -379,6 +451,8 @@ export class UnitsService {
     if (roomConds.length === 1) {
       Object.assign(filter, roomConds[0]);
     } else if (roomConds.length > 1) {
+      // Each branch carries its own `$expr`, which cannot be merged into the
+      // single top-level `$expr` key — `$or` is the only correct spelling.
       filter.$or = roomConds;
     }
 

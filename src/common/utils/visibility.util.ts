@@ -69,8 +69,13 @@ export function applyHiddenIds<T>(
   // keys, so mutate through a loosely-typed alias and return the same object.
   const f = filter as Record<string, any>;
 
-  // The record's own switch.
-  f.isActive = { $ne: false };
+  // The record's own switch. ANDed rather than assigned so an explicit
+  // `?isActive=` in the query is not silently replaced by the cascade.
+  if (f.isActive === undefined) {
+    f.isActive = { $ne: false };
+  } else {
+    f.$and = [...(f.$and ?? []), { isActive: { $ne: false } }];
+  }
 
   const exclude = (key: string, ids: Types.ObjectId[]) => {
     if (!ids.length) return;
